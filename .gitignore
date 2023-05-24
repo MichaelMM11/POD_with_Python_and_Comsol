@@ -1,0 +1,5 @@
+py_virt_env/
+.idea
+
+src/scipy
+git_commit_message.txt
