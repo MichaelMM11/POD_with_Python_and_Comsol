@@ -1,0 +1,44 @@
+
+* topic
+	- main topic: temperature models of electric machines
+	- goal: how to evaluate/estimate material properties/state of information if machine is running in the long run (> 20 years)
+    => one approach is MOR
+	  especially state of duration: (non)-linear model
+
+* tactic
+- idea: co-operate with Honza because matrix already given
+- date before annual report (end of august)
+- English-B2, terminate date (but exam not as import as annual report)!
+- agros for creating geometry, extract matrices
+- part by part reduce whole motor (really nice to pick particular parts of motors that can be reduced [non-reducabbe parts still ok]) combination of FEM and MOR
+
+* remarks
+- omit PETSc if MOR is sufficent
+- start with POD (easiest method) (from snapshots of stiffness matrix)
+- principle POD:
+  - from square matrix get eivenval/eigenvec (these eigenvec generate square matrix as well)
+  - take (biggest ~5) eigenval/eigenvec matrix rect then
+  - multiply big matrix by these rect matrix
+
+* current task [/]
+- [ ] contact Honza to share code: to grasp what's going on (specification of the probelm) described by BC, Coulomb
+      - try to understand code
+      - can use the code or not...up to me
+      - piece of winding; goal was: create network (similar to elec) but here distribution of heat
+      - take FEM to reduce it with given precision and obtain something more precise 
+- [ ] Honca can generate random winding around the slot, how did he do
+- [ ] need to figure out how to get data by command line
+- [ ] Comsol (geometry, mesh, export): calculating snapshots (solutions of different parameter-values)
+      - try to make reduction POD (how decomposition work):
+        1. create coviant matrix
+        2. multiply by transpose matrix
+        3. calcualte eigenvec/val of these matrix
+* current questions [/]
+- [ ] why MPh package? https://github.com/MPh-py/MPh
+  - [ ] just more convenient to get data?
+  - [ ] not more than 10E6(?) entries if export data (mesh, matrix... from Comsol (workaround or limitation?)
+  - [ ] do I need to know matrix as a whole to decide how much 'energy' in system?
+    - to decide how much one eigenvalue weights
+    - to make responsible cutoff
+- [ ] are we able to create random winding in Comsol (using script); Agros can
+

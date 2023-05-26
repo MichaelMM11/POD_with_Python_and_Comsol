@@ -10,6 +10,7 @@ purpose
 remark
     - be connected to university internet because of Comsol instance
     - https://mph.readthedocs.io/en/stable/tutorial.html
+    - https://julianroth.org/res/Master_Thesis_Julian_Roth.pdf (for introduction)
 """
 
 import mph
