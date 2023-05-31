@@ -20,25 +20,31 @@
   - take (biggest ~5) eigenval/eigenvec matrix rect then
   - multiply big matrix by these rect matrix
 
-* current task [/]
-- [ ] contact Honza to share code: to grasp what's going on (specification of the probelm) described by BC, Coulomb
-      - try to understand code
-      - can use the code or not...up to me
-      - piece of winding; goal was: create network (similar to elec) but here distribution of heat
-      - take FEM to reduce it with given precision and obtain something more precise 
-- [ ] Honca can generate random winding around the slot, how did he do
+* current task [2/4]
+- [X] contact Honza to share code: to grasp what's going on (specification of the probelm) described by BC, Coulomb
+          - try to understand code
+          - can use the code or not...up to me
+          - piece of winding; goal was: create network (similar to elec) but here distribution of heat
+          - take FEM to reduce it with given precision and obtain something more precise 
+- [X] Honza can generate random winding around the slot, how did he do
 - [ ] need to figure out how to get data by command line
-- [ ] Comsol (geometry, mesh, export): calculating snapshots (solutions of different parameter-values)
-      - try to make reduction POD (how decomposition work):
-        1. create coviant matrix
-        2. multiply by transpose matrix
-        3. calcualte eigenvec/val of these matrix
-* current questions [/]
-- [ ] why MPh package? https://github.com/MPh-py/MPh
-  - [ ] just more convenient to get data?
-  - [ ] not more than 10E6(?) entries if export data (mesh, matrix... from Comsol (workaround or limitation?)
-  - [ ] do I need to know matrix as a whole to decide how much 'energy' in system?
-    - to decide how much one eigenvalue weights
-    - to make responsible cutoff
-- [ ] are we able to create random winding in Comsol (using script); Agros can
+- [-] Comsol: calculating snapshots (solutions of different parameter-values, solution matrix)
+          - [-] try to make reduction POD (how decomposition work):
+                    1. [X] create covariant matrix
+                    2. [X] multiply by transpose matrix
+                    3. [X] calcualte eigenvec/val of these matrix
+                    4. [ ] thorough testing and cleaning is missing
+* current questions [4/4]
+- [X] Q: why MPh package? https://github.com/MPh-py/MPh
+          - [X] Q: just more convenient to get data?
+            A: just another approach to interact with Comsol, just a trial
+- [X] Q: not more than 10E6(?) entries if export data (mesh, matrix... from Comsol (workaround or limitation?)
+    A: yes, known limitation
+- [X] Q: do I need to know matrix as a whole to decide how much 'energy' in system?
+    A: yes, (big) solution matrix must be solved/calculated/given once
+          - to decide how much one eigenvalue weights
+          - to make responsible cutoff
+- [X] Q: are we able to create random winding in Comsol (using script)
+          - A: Agros can, Comsol can be tricky
+
 
