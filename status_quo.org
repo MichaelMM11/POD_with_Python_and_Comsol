@@ -33,8 +33,11 @@
                     1. [X] create covariant matrix
                     2. [X] multiply by transpose matrix
                     3. [X] calcualte eigenvec/val of these matrix
-                    4. [ ] thorough testing and cleaning is missing
-* current questions [4/4]
+                    4. [X] clean coded
+                    5. [X] make reduced matrices (of eigenvectors/eigenvalues)
+                    6. [ ] check if everything is alright so far
+                    7. [ ] insert these matrices into Comsol and evaluate results
+* current questions [4/5]
 - [X] Q: why MPh package? https://github.com/MPh-py/MPh
           - [X] Q: just more convenient to get data?
             A: just another approach to interact with Comsol, just a trial
@@ -46,5 +49,5 @@
           - to make responsible cutoff
 - [X] Q: are we able to create random winding in Comsol (using script)
           - A: Agros can, Comsol can be tricky
-
+- [ ] Q: A^T * A =! A * A^T, ie non commutative
 

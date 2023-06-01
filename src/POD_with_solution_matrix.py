@@ -9,43 +9,44 @@ remark
     - 
 """
 
+
+
+
+# try:
+#     import sys
+#     sys.path.append('~/Desktop/x')
+#     from convenience import *
+#         # console, \
+#         # separator \
+#         # my_timer, \
+#         # perf_counter, \
+#         # show_abs_rel_error, \
+#         # convert_to_scientific_notation
+# except Exception as e:
+#     log.warning(e)
+
+from convenience import *
+
 import numpy as np
 from pathlib import Path
 from numpy.linalg import eig
+
+
+
+should_array_be_completely_displayed = False
+if should_array_be_completely_displayed:
+    np.set_printoptions(threshold=np.inf)
+
+
 
 
 current__dir = Path.cwd()
 main__dir = current__dir.parents[0]
 comsol__dir = main__dir.joinpath('comsol')
 
-sol_matrix_filename = 'Data.txt'
+solution_matrix_filename = 'Data.txt'
 
-file_to_load = Path(comsol__dir, sol_matrix_filename)
-
-
-
-def data_must_have_float_entries(data):
-    to_check = np.isnan(data)
-    if True in to_check:
-        error_msg = 'Error: data corrupt'
-        display_tailored_error_message(error_msg)
-
-
-
-def print_dimemsions_from_matrix(matrix):
-    rows, columns = np.shape(matrix)[0], np.shape(matrix)[1]
-    print(f"number of rows:    {rows}\nnumber of columns: {columns}")
-
-sol_matrix = np.genfromtxt(file_to_load, comments='%')
-
-                        #delimiter='\t', dtype=float, skip_header=1,)
-
-
-
-
-
-
-sol_matrix_transpose = np.matrix.transpose(sol_matrix)
+file_to_load = Path(comsol__dir, solution_matrix_filename)
 
 
 
@@ -53,70 +54,31 @@ sol_matrix_transpose = np.matrix.transpose(sol_matrix)
 
 
 
-covariant_matrix = np.matmul(sol_matrix_transpose, sol_matrix)
 
 
-eigenvalues, eigenvectors = eig(covariant_matrix)
-#print(eigenvalues)
-#print(eigenvectors)
+solution_matrix = np.genfromtxt(file_to_load, comments='%')
+covariance_matrix = calculate_covariance_matrix(solution_matrix)
 
 
+eigenvalues, eigenvectors = eig(covariance_matrix)
 
 
-def list_eigenval__partial_energy__energy_ratio(eigenvalues):
-    number_of_eigenvalues = len(eigenvalues)
-    total_energy = np.sum(eigenvalues)
-    partial_energy = 0
+list_eigenval__partial_energy__energy_ratio(eigenvalues, )
 
-    for i in range(number_of_eigenvalues):
-        ith_eigenvalue = i
-        partial_energy += eigenvalues[ith_eigenvalue]
-        energy_ratio = partial_energy/total_energy
-        print(f"{i}  {eigenvalues[i]}     {partial_energy}      {energy_ratio}")
-
-#list_eigenval__partial_energy__energy_ratio(eigenvalues)
+console.print(f"[red]{covariance_matrix}")
+console.print(f"[blue]{return_nth_eigenvalue_eigenvector(1, eigenvalues, eigenvectors)}")
+console.print(f"[yellow]{create_nth_reduced_diag_eigenvalue_matrix(3, eigenvalues)}")
+console.print(f"[violet]{create_nth_reduced_matrix(3,covariance_matrix)}")
 
 
-def reduced_matrix(number, eigenvalues, eivenvectors):
-    reduced_eigenvalues = eigenvalues[:number]
-    reduced_eigenvectors = eivenvectors[:,number]
-    return reduced_eigenvalues, reduced_eigenvectors
-#     a = np.matrix()
-
-a, b = reduced_matrix(3, eigenvalues, eigenvectors)
-
-#print(a)
-#print(b)
-#print(eigenvectors[:,:])
-
-def fast_check(w, v, a):
-    # https://scriptverse.academy/tutorials/python-eigenvalues-eigenvectors.html
-    for i in range(len(a)):
-        print(np.allclose(np.dot(a,v[:,i]),np.dot(w[i],v[:,i])))
-
-a = np.array([[3, 1], 
-              [2, 2]])
-w, v = np.linalg.eig(a)
-print(w)
-print(v)
-fast_check(w, v, a)
-
-fast_check(eigenvalues, eigenvectors, covariant_matrix)
-
-exit()
-a = np.array([[3, 1], 
-              [2, 2]])
-w, v = np.linalg.eig(a)
-
-w, v, a = eigenvalues, eigenvectors, covariant_matrix
-print(np.allclose(np.dot(a,v[:,3]),np.dot(w[3],v[:,3])))
-print(a)
-print()
-print(w[:2])
-#print(w)
-print()
-#print(v[:,1-2])
-#print(v)
+#@ can make more dynamic, ie depending on threshold this number is returned \
+#  as value and the reduced matrices are generated on the fly
 
 
 
+
+#check_eigenvalue_eigenvector_with_matrix(eigenvalues, eigenvectors, covariant_matrix)
+
+
+# https://scriptverse.academy/tutorials/python-eigenvalues-eigenvectors.html
+# https://pythonnumericalmethods.berkeley.edu/notebooks/chapter15.04-Eigenvalues-and-Eigenvectors-in-Python.html

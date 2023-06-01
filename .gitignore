@@ -2,4 +2,7 @@ py_virt_env/
 .idea
 
 src/scipy
+src/__pycache__/
+src/loggings.log
 git_commit_message.txt
+
