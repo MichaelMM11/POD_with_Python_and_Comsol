@@ -29,25 +29,27 @@ from pathlib import Path
 from scipy import linalg
 
 
-should_array_be_completely_displayed = False
-if should_array_be_completely_displayed:
-    np.set_printoptions(threshold=np.inf)
+
+should_np_array_be_completely_displayed(False)
+set_number_of_digits_after_period(8)
+
 
 
 current__dir = Path.cwd()
 main__dir = current__dir.parents[0]
 comsol__dir = main__dir.joinpath('comsol')
+data__dir = main__dir.joinpath('data')
+src__dir = main__dir.joinpath('src')
 solution_matrix_filename = 'Data.txt'
 file_to_load = Path(comsol__dir, solution_matrix_filename)
 
 
 solution_matrix = np.genfromtxt(file_to_load, comments='%')
-#list_eigenval__partial_energy__energy_ratio(eigenvalues, )
 
 
 
 
-# solution_matrix = np.array([[2, -2, -2/3], [2/3, 2, -2], [2/5, 2/3, 2]])
+#solution_matrix = np.array([[2, -2, -2/3], [2/3, 2, -2], [2/5, 2/3, 2]])
 
 U, sigma_i, V_star = linalg.svd(solution_matrix, full_matrices=True)
 # console.print(f"[red]U={U}")
@@ -55,6 +57,7 @@ U, sigma_i, V_star = linalg.svd(solution_matrix, full_matrices=True)
 # console.print(f"[violet]V_star={V_star}")
 # console.print(f"[yellow]U__dim={get_dimemsions_from_matrix(U)}")
 # console.print(f"[yellow]V_star__dim={get_dimemsions_from_matrix(V_star)}")
+list_eigenval__partial_energy__energy_ratio(sigma_i, )
 
 
 reduced_Sigma = create_reduced_Sigma_matrix(sigma_i)
@@ -64,12 +67,14 @@ reduced_Sigma = create_reduced_Sigma_matrix(sigma_i)
 
 
 reduced_matrix = return_reduced_matrix_from__U_S_Vstar(U, reduced_Sigma, V_star, rank=13)
-console.print(f"[magenta]reduced_matrix={reduced_matrix}")
-console.print(f"[blue]sol_matrix={solution_matrix}")
+# console.print(f"[magenta]reduced_matrix={reduced_matrix}")
+# console.print(f"[blue]sol_matrix={solution_matrix}")
 
 
 
-
+# reduced_matrix_filename = 'reduced_matrix_from_Python.txt'
+# file_to_save = Path(current__dir, reduced_matrix_filename)
+# np.savetxt(file_to_save,reduced_matrix)
 
 #! just sandbox for trial & error
 # - https://modred.readthedocs.io/en/stable/tutorial_modaldecomp.html

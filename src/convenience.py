@@ -243,3 +243,47 @@ def return_reduced_matrix_from__U_S_Vstar(U, Sigma, V_star, rank):
     Sigma = Sigma[:rank, :rank]
     V_star = V_star[:rank, :rank]
     return np.matmul(U, np.matmul(Sigma, V_star))
+
+
+def should_np_array_be_completely_displayed(status):
+    """
+    - when np.array is printed to console then for large matrices rows are skipped
+    with ...
+    - this function let you switch between full or reduced console display
+    """
+    if status:
+        np.set_printoptions(threshold=np.inf)
+
+
+def set_number_of_digits_after_period(digits=8):
+    """
+    - toggle function to set number of digits of floates inside an array
+    - does NOT affect bare floating point numbers
+    """
+    if (digits > 16) \
+    or (digits < 0):
+        message = 'WARNING: safety net triggered when number of digits was tried to be set.\n' \
+        'Program continues with valid number.'
+        console.print(f"[yellow]{message}")
+        digits = 4
+    np.set_printoptions(precision=digits)
+
+def matrices_must_be_numerically_close(matrix_a, matrix_b):
+    """
+    - due to numeric reasons matrices can be 'equal' even when entries differ 
+      mathematically
+    - so these two values for the same row & column in matrix_a and matrix_b are
+      treated to be equal: 6.04347257e-14 and 0.00000000e+0
+    - https://stackoverflow.com/questions/10851246/python-comparing-two-matrices
+    """
+    status = np.allclose(matrix_a, matrix_b)
+    if status:
+        console.print(f"[green]matrices are numerically close") 
+    else:
+        console.print(f"[red]matrices are not numerically close") 
+
+def print_matrix_where_matrices_elements_are_close(matrix_a, matrix_b):
+    """
+    - mainly useful for debugging to check where two matrices differ numerically
+    """
+    console.print(f"{np.isclose(matrix_a, matrix_b)}")

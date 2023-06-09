@@ -29,8 +29,9 @@
         3. [X] calcualte eigenvec/val of these matrix
         4. [X] clean coded
         5. [X] make reduced matrices (of eigenvectors/eigenvalues)
-        6. [ ] check if everything is alright so far
+        6. [X] check if everything is alright so far
         7. [ ] load reduced matrix into Comsol and evaluate results
+        8. [ ] try to predict values from reduced matrix with respect to 'solution matrix'
 - [ ] deepen knowledge in matrix LA
 - [ ] write down theory of SVD, POD
 * current questions [5/5]
@@ -47,6 +48,5 @@
     - A: Agros can, Comsol can be tricky
 - [X] Q: A^T * A =! A * A^T, ie non commutative
     - A: yes, as expected not commutative
-    - $a^2+b**2=c2$
-
 * last discussion <2023-06-02 Fri>
+
