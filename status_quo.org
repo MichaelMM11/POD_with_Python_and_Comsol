@@ -13,41 +13,40 @@
 - part by part reduce whole motor (really nice to pick particular parts of motors that can be reduced [non-reducabbe parts still ok]) combination of FEM and MOR
 
 * remarks
-- omit PETSc if MOR is sufficent
-- start with POD (easiest method) (from snapshots of stiffness matrix)
-- principle POD:
-  - from square matrix get eivenval/eigenvec (these eigenvec generate square matrix as well)
-  - take (biggest ~5) eigenval/eigenvec matrix rect then
-  - multiply big matrix by these rect matrix
-
-* current task [2/4]
+- 
+* current task [3/6]
 - [X] contact Honza to share code: to grasp what's going on (specification of the probelm) described by BC, Coulomb
-          - try to understand code
-          - can use the code or not...up to me
-          - piece of winding; goal was: create network (similar to elec) but here distribution of heat
-          - take FEM to reduce it with given precision and obtain something more precise 
+    - try to understand code
+    - can use the code or not...up to me
+    - piece of winding; goal was: create network (similar to elec) but here distribution of heat
+    - take FEM to reduce it with given precision and obtain something more precise 
 - [X] Honza can generate random winding around the slot, how did he do
-- [ ] need to figure out how to get data by command line
+- [X] need to figure out how to get data by command line (obsolete)
 - [-] Comsol: calculating snapshots (solutions of different parameter-values, solution matrix)
-          - [-] try to make reduction POD (how decomposition work):
-                    1. [X] create covariant matrix
-                    2. [X] multiply by transpose matrix
-                    3. [X] calcualte eigenvec/val of these matrix
-                    4. [X] clean coded
-                    5. [X] make reduced matrices (of eigenvectors/eigenvalues)
-                    6. [ ] check if everything is alright so far
-                    7. [ ] insert these matrices into Comsol and evaluate results
-* current questions [4/5]
+    - [-] try to make reduction POD (how decomposition work):
+        1. [X] create covariant matrix
+        2. [X] multiply by transpose matrix
+        3. [X] calcualte eigenvec/val of these matrix
+        4. [X] clean coded
+        5. [X] make reduced matrices (of eigenvectors/eigenvalues)
+        6. [ ] check if everything is alright so far
+        7. [ ] load reduced matrix into Comsol and evaluate results
+- [ ] deepen knowledge in matrix LA
+- [ ] write down theory of SVD, POD
+* current questions [5/5]
 - [X] Q: why MPh package? https://github.com/MPh-py/MPh
-          - [X] Q: just more convenient to get data?
-            A: just another approach to interact with Comsol, just a trial
+    - [X] Q: just more convenient to get data?
+      A: just another approach to interact with Comsol, just a trial
 - [X] Q: not more than 10E6(?) entries if export data (mesh, matrix... from Comsol (workaround or limitation?)
     A: yes, known limitation
 - [X] Q: do I need to know matrix as a whole to decide how much 'energy' in system?
     A: yes, (big) solution matrix must be solved/calculated/given once
-          - to decide how much one eigenvalue weights
-          - to make responsible cutoff
+    - to decide how much one eigenvalue weights
+    - to make responsible cutoff
 - [X] Q: are we able to create random winding in Comsol (using script)
-          - A: Agros can, Comsol can be tricky
-- [ ] Q: A^T * A =! A * A^T, ie non commutative
+    - A: Agros can, Comsol can be tricky
+- [X] Q: A^T * A =! A * A^T, ie non commutative
+    - A: yes, as expected not commutative
+    - $a^2+b**2=c2$
 
+* last discussion <2023-06-02 Fri>

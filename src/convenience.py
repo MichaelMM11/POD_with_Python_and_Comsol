@@ -68,7 +68,7 @@ console = Console(highlight=False)
 
 def separator(msg):
     """makes visible line in shell for convenience"""
-    text = f"[blue]↓ {msg} ↓"
+    text = f"[yellow]↓ {msg} ↓"
     console.print()
     console.print()
     console.rule(title=text, style="black")
@@ -132,8 +132,14 @@ def get_dimemsions_from_matrix(matrix):
     return rows, columns
 
 def calculate_covariance_matrix(matrix):
+    rows, columns = get_dimemsions_from_matrix(matrix)
     matrix_transpose = np.matrix.transpose(matrix)
-    return np.matmul(matrix_transpose, matrix)
+    if rows < columns:
+        covariant_matrix = np.matmul(matrix, matrix_transpose)
+    else:
+        covariant_matrix = np.matmul(matrix_transpose, matrix)
+    covariant_matrix = np.matmul(matrix,matrix_transpose, )
+    return covariant_matrix
 
 def return_nth_eigenvalue_eigenvector(number, eigenvalues, eivenvectors):
     nth_eigenvalues= eigenvalues[:number]
@@ -144,7 +150,7 @@ def create_nth_reduced_matrix(reduction_number, matrix):
     return matrix[:reduction_number, :reduction_number]
 
 def create_nth_reduced_diag_eigenvalue_matrix(reduction_number, eigenvalues):
-    return np.diag(eigenvalues[:reduction_number])
+    return np.sqrt(np.diag(eigenvalues[:reduction_number]))
 
 def check_eigenvalue_eigenvector_with_matrix(eigenvalues, eigenvectors, matrix):
     """A*v = λ*v must be true with
@@ -193,6 +199,47 @@ def list_eigenval__partial_energy__energy_ratio(eigenvalues, threshold=1):
               f"       {convert_to_scientific_notation(eigenvalues[ith_eigenvalue], 4)} " \
               f"   {convert_to_scientific_notation(partial_energy, 4)} " \
               f"   {convert_to_scientific_notation(energy_ratio, 4)} ")
-        if energy_ratio > threshold:
-            console.print(f"[violet]threshold = {threshold} => {ith_eigenvalue+1} PODs sufficient")
-            return
+    if energy_ratio > threshold:
+        console.print(f"[violet]threshold = {threshold} => {ith_eigenvalue+1} PODs sufficient")
+        #     return  #@ lead to unwanted cut-off
+
+
+def create_full_Sigma_matrix(singular_values, rows=0):
+    """
+    - adds zero matrix with n rows to input matrix
+               sigma_1          0      0           0
+                     0    sigma_2      0           0
+                   ...        ...    ...         ...
+     Sigma =         0          0      0     sigma_n
+                     0          0      0           0
+                    ...        ...    ...         ...
+                     0          0      0           0
+    - default parameter leaves input matrix untouched
+    """
+    Sigma = np.diag(singular_values)
+    _, columns = get_dimemsions_from_matrix(Sigma)
+    return np.concatenate([Sigma, np.zeros((rows,columns))], axis=0)
+
+
+def create_reduced_Sigma_matrix(singular_values):
+    """
+    - example with n different singular values
+               sigma_1          0      0           0
+     Sigma =         0    sigma_2      0           0
+                   ...        ...    ...         ...
+                     0          0      0     sigma_n
+    """
+    return np.diag(singular_values)
+
+
+def return_reduced_matrix_from__U_S_Vstar(U, Sigma, V_star, rank):
+    """returns reduced matrix R
+    - X = U Sigma V_star    (SVD)
+    - R = U Sigma V_star    (POD)
+      BUT U, Sigma, V_star have reduced rank in computation for R
+    """
+    rows, _ = get_dimemsions_from_matrix(U)
+    U = U[:rows, :rank]
+    Sigma = Sigma[:rank, :rank]
+    V_star = V_star[:rank, :rank]
+    return np.matmul(U, np.matmul(Sigma, V_star))
