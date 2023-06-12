@@ -2,26 +2,27 @@
 # -*- coding:utf-8 -*-
 
 
-
 """
 purpose
-    - 
+    - provides all kind of functions
+      - functions for debugging
+      - functions that do the actual computation
 
 remark
-    - 
+    - not sorted but maybe there is need one day to split into semantic files
 """
 
-
-
-
-def inspect(x):
-    """returns quick&dirty main information of variable"""
-    print(type(x))
-    print(x)
+""" imports
+- almost any of these imports is needed in almost any function
+"""
+import numpy as np
+import pandas as pd
+from tabulate import tabulate
 
 
 """ 
 - creates file where information during runtime is tracked
+- can be used to track code smells effectively (because comments are not enough)
 - https://docs.python.org/3/howto/logging.html
 - https://pyzone.dev/python-logging-module-deep-tutorial/
 - options/possible calls:
@@ -39,14 +40,12 @@ def inspect(x):
 import logging
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(asctime)s  [%(levelname)-8s] %(lineno)7s : %(message)s',
-    filemode='a',
+    format='%(asctime)s :: [%(levelname)-8s] :: %(lineno)7s :: %(message)s :: %(funcName)s',
+    filemode='w',
     filename='loggings.log',
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 log = logging.getLogger("my_code")
-
-
 
 
 """console and print
@@ -64,8 +63,6 @@ log = logging.getLogger("my_code")
 from rich.console import Console
 console = Console(highlight=False)
 
-
-
 def separator(msg):
     """makes visible line in shell for convenience"""
     text = f"[yellow]↓ {msg} ↓"
@@ -73,9 +70,8 @@ def separator(msg):
     console.print()
     console.rule(title=text, style="black")
 
-
-"""time
-  - time speed of function calls are of interest, this wrapper is most useful
+"""
+  - when execution time of function calls are of interest, this wrapper is most useful
 """
 from time import perf_counter
 def my_timer(func):
@@ -90,10 +86,11 @@ def my_timer(func):
         return result
     return wrapper
 
+def inspect(x):
+    """returns quick&dirty main information of variable"""
+    print(type(x))
+    print(x)
 
-
-"""numbers
-"""
 def convert_to_scientific_notation(number, digits=10):
     """
     - https://stackoverflow.com/questions/6913532/display-a-decimal-in-scientific-notation
@@ -116,12 +113,6 @@ def show_abs_rel_error(num_a, num_b):
     console.print(f"[yellow] Absolute error:", abs_err)
     console.print(f"[yellow] Relative error:", rel_err, "%")
 
-
-
-
-"""matrix
-"""
-import numpy as np
 def print_dimemsions_from_matrix(matrix):
     """returns quick information of matrix dimensions"""
     rows, columns = get_dimemsions_from_matrix(matrix)
@@ -166,12 +157,6 @@ def check_eigenvalue_eigenvector_with_matrix(eigenvalues, eigenvectors, matrix):
             message = f"A*v ≠ λ*v: eigenvector/eigenvalue with index {col} do not hold relationship"
             console.print(f"[red]{message}")
 
-
-
-"""
-data
-"""
-import numpy as np
 def data_must_have_float_entries(data):
     """as soon as element (can be array as well) is not a number alert is given"""
     to_check = np.isnan(data)
@@ -179,76 +164,72 @@ def data_must_have_float_entries(data):
         message = 'data corrupt'
         console.print(f"[red]{message}")
 
-
-def list_eigenval__partial_energy__energy_ratio(eigenvalues, threshold=1):
+def list_eigenval__partial_energy__energy_ratio(eigenvalues, threshold=0.95):
     """
     - makes pretty table of eigenvalues and their 'weight'
     - threshold returns number of eigenvalues needed to have minimum energy level
     """
+    log.info("rigid headers-variable leads to magic numbers in other functions.")
+    headers=('POD index', 'ith eigenvalue', 'part. energy', 'energy ratio')
+    A = compute__eigenval__partial_energy__energy_ratio(eigenvalues, headers)
+    list_eigenval__partial_energy__energy_ratio_with_threshold(A, threshold, headers=headers)
+    save__eigenval__partial_energy__energy_ratio(A, headers)
+
+def compute__eigenval__partial_energy__energy_ratio(eigenvalues, headers):
+    """
+    - calculates the relative importance of the i-th POD mode as np.matrix
+    """
+    log.info("fix magic numbers: so far order in header variable must match " \
+             "in loop...definitely error prone")
     number_of_eigenvalues = len(eigenvalues)
     total_energy = np.sum(eigenvalues)
     partial_energy = 0
+    data_matrix = np.zeros((number_of_eigenvalues, len(headers)))
 
-
-    import pandas as pd
-    from astropy.table import QTable, Table, Column
-
-    from tabulate import tabulate
-    import random
-
-    headers=('POD index', 'ith eigenvalue', 'part. energy', 'energy ratio')
-    col_1_header = 'POD index'
-    col_2_header = 'ith eigenvalue'
-    col_3_header = 'part. energy'
-    col_4_header = 'energy ratio'
-
-    A = np.zeros((number_of_eigenvalues, len(headers)))
-
-    console.print(f"[yellow]{col_1_header:>10} {col_2_header:>20} {col_3_header:>20} {col_4_header:>15}")
-    console.print(f"[yellow]{'='*len(col_1_header):>10} {'='*len(col_2_header):>20} {'='*len(col_3_header):>20} {'='*len(col_4_header):>15}")
     for ith_eigenvalue in range(number_of_eigenvalues):
         partial_energy += eigenvalues[ith_eigenvalue]
-        energy_ratio = partial_energy/total_energy
-        A[ith_eigenvalue][0] = ith_eigenvalue
-        A[ith_eigenvalue][1] = eigenvalues[ith_eigenvalue]*random.randint(-1,1)
-        A[ith_eigenvalue][2] = partial_energy
-        A[ith_eigenvalue][3] = energy_ratio
+        energy_ratio = partial_energy / total_energy
+        data_matrix[ith_eigenvalue][0] = ith_eigenvalue
+        data_matrix[ith_eigenvalue][1] = eigenvalues[ith_eigenvalue]
+        data_matrix[ith_eigenvalue][2] = partial_energy
+        data_matrix[ith_eigenvalue][3] = energy_ratio
+    return data_matrix
 
+def list_eigenval__partial_energy__energy_ratio_with_threshold(matrix_a, threshold, headers):
+    """
+    - prints the eigenvalue-energy-relationship and returns the threshold value
+      for energy ratio
+    """
+    log.info("to get threshold of required PODs rigid data structure MUST be passed " \
+             "that exact way => error prone and should be fixed")
+    table_of_matrix = tabulate(matrix_a,
+                 headers=headers,
+                 tablefmt="simple",
+                 floatfmt=(".0f", ".5f", ".2e", ".5e"))
+    console.print(f'[blue]{table_of_matrix}')
 
-        console.print(f"{ith_eigenvalue:>10} " \
-              f"{convert_to_scientific_notation(eigenvalues[ith_eigenvalue],10):>20} " \
-              f"{convert_to_scientific_notation(partial_energy, 8):>20} " \
-              f"{convert_to_float_notation(energy_ratio, 4):>15} ")
-    #print(A)
-    
-    console.print(f'[red]{tabulate(A, headers=headers, tablefmt="simple", floatfmt=(".0f",".10f",".2e",".2e"))}')
+    rows, _ = get_dimemsions_from_matrix(matrix_a)
+    for i in range(rows):
+        if matrix_a[i,3] > threshold:
+            console.print(f"[violet]first {i+1} PODs needed to exceed" \
+                          f"threshold {threshold}: value {matrix_a[i,3]} > threshold {threshold}")
+            return
 
-    # t = Table(rows=A,names=headers)
-    # t['POD index'].format = '%.0f'
-    # t['ith eigenvalue'].format = '%.19e'
-    # t['part. energy'].format = '%.2e'
-    # t['energy ratio'].format = '%.2e'
-    # console.print(f'{t[:]}')
-    #df = pd.DataFrame(data=A, columns=headers)
-    #df['ith eigenvalue'] = df['ith eigenvalue'].map('{:,.2e}'.format)
-    #df.style.format({"POD index": "{:.0f}","ith eigenvalue": "{:.2e}", "part. energy": "{:.2e}"})
-    #print(df)
-
-    return
-    console.print(f"[yellow]POD index ith eigenvalue part. energy   energy ratio")
-    console.print(f"[yellow]{9*'='} {14*'='} {12*'='}   {12*'='}")
-    for ith_eigenvalue in range(number_of_eigenvalues):
-        partial_energy += eigenvalues[ith_eigenvalue]
-        energy_ratio = partial_energy/total_energy
-
-        console.print(f"{ith_eigenvalue:2} " \
-              f"       {convert_to_float_notation(eigenvalues[ith_eigenvalue], 19)} " \
-              f"   {convert_to_scientific_notation(partial_energy, 8)} " \
-              f"   {convert_to_scientific_notation(energy_ratio, 4)} ")
-    if energy_ratio > threshold:
-        console.print(f"[violet]threshold = {threshold} => {ith_eigenvalue+1} PODs sufficient")
-        #     return  #@ lead to unwanted cut-off
-
+def save__eigenval__partial_energy__energy_ratio(matrix, headers):
+    """
+    - it is always good idea to have access to data in textfile-form
+    - alternative that avoids pandas
+        with open('table.txt', 'w') as f: f.write(tabulate(...))
+      - see no big difference between both options...
+    """
+    df = pd.DataFrame(data=matrix, columns=headers, )
+    format_mapping = {headers[0]:"{:.0f}",
+                      headers[1]:"{:.3e}",
+                      headers[2]:"{:.2e}",
+                      headers[3]:"{:.4e}"}
+    for key, value in format_mapping.items():
+        df[key] = df[key].apply(value.format)
+    df.to_csv('eigenval_partial_energy_energy_ratio.csv', sep='\t', index=False)
 
 def create_full_Sigma_matrix(singular_values, rows=0):
     """
@@ -266,7 +247,6 @@ def create_full_Sigma_matrix(singular_values, rows=0):
     _, columns = get_dimemsions_from_matrix(Sigma)
     return np.concatenate([Sigma, np.zeros((rows,columns))], axis=0)
 
-
 def create_reduced_Sigma_matrix(singular_values):
     """
     - example with n different singular values
@@ -276,7 +256,6 @@ def create_reduced_Sigma_matrix(singular_values):
                      0          0      0     sigma_n
     """
     return np.diag(singular_values)
-
 
 def return_reduced_matrix_from__U_S_Vstar(U, Sigma, V_star, rank):
     """returns reduced matrix R
@@ -290,7 +269,6 @@ def return_reduced_matrix_from__U_S_Vstar(U, Sigma, V_star, rank):
     V_star = V_star[:rank, :rank]
     return np.matmul(U, np.matmul(Sigma, V_star))
 
-
 def should_np_array_be_completely_displayed(status):
     """
     - when np.array is printed to console then for large matrices rows are skipped
@@ -299,7 +277,6 @@ def should_np_array_be_completely_displayed(status):
     """
     if status:
         np.set_printoptions(threshold=np.inf)
-
 
 def set_number_of_digits_after_period(digits=8):
     """
