@@ -189,6 +189,52 @@ def list_eigenval__partial_energy__energy_ratio(eigenvalues, threshold=1):
     total_energy = np.sum(eigenvalues)
     partial_energy = 0
 
+
+    import pandas as pd
+    from astropy.table import QTable, Table, Column
+
+    from tabulate import tabulate
+    import random
+
+    headers=('POD index', 'ith eigenvalue', 'part. energy', 'energy ratio')
+    col_1_header = 'POD index'
+    col_2_header = 'ith eigenvalue'
+    col_3_header = 'part. energy'
+    col_4_header = 'energy ratio'
+
+    A = np.zeros((number_of_eigenvalues, len(headers)))
+
+    console.print(f"[yellow]{col_1_header:>10} {col_2_header:>20} {col_3_header:>20} {col_4_header:>15}")
+    console.print(f"[yellow]{'='*len(col_1_header):>10} {'='*len(col_2_header):>20} {'='*len(col_3_header):>20} {'='*len(col_4_header):>15}")
+    for ith_eigenvalue in range(number_of_eigenvalues):
+        partial_energy += eigenvalues[ith_eigenvalue]
+        energy_ratio = partial_energy/total_energy
+        A[ith_eigenvalue][0] = ith_eigenvalue
+        A[ith_eigenvalue][1] = eigenvalues[ith_eigenvalue]*random.randint(-1,1)
+        A[ith_eigenvalue][2] = partial_energy
+        A[ith_eigenvalue][3] = energy_ratio
+
+
+        console.print(f"{ith_eigenvalue:>10} " \
+              f"{convert_to_scientific_notation(eigenvalues[ith_eigenvalue],10):>20} " \
+              f"{convert_to_scientific_notation(partial_energy, 8):>20} " \
+              f"{convert_to_float_notation(energy_ratio, 4):>15} ")
+    #print(A)
+    
+    console.print(f'[red]{tabulate(A, headers=headers, tablefmt="simple", floatfmt=(".0f",".10f",".2e",".2e"))}')
+
+    # t = Table(rows=A,names=headers)
+    # t['POD index'].format = '%.0f'
+    # t['ith eigenvalue'].format = '%.19e'
+    # t['part. energy'].format = '%.2e'
+    # t['energy ratio'].format = '%.2e'
+    # console.print(f'{t[:]}')
+    #df = pd.DataFrame(data=A, columns=headers)
+    #df['ith eigenvalue'] = df['ith eigenvalue'].map('{:,.2e}'.format)
+    #df.style.format({"POD index": "{:.0f}","ith eigenvalue": "{:.2e}", "part. energy": "{:.2e}"})
+    #print(df)
+
+    return
     console.print(f"[yellow]POD index ith eigenvalue part. energy   energy ratio")
     console.print(f"[yellow]{9*'='} {14*'='} {12*'='}   {12*'='}")
     for ith_eigenvalue in range(number_of_eigenvalues):
@@ -196,8 +242,8 @@ def list_eigenval__partial_energy__energy_ratio(eigenvalues, threshold=1):
         energy_ratio = partial_energy/total_energy
 
         console.print(f"{ith_eigenvalue:2} " \
-              f"       {convert_to_scientific_notation(eigenvalues[ith_eigenvalue], 4)} " \
-              f"   {convert_to_scientific_notation(partial_energy, 4)} " \
+              f"       {convert_to_float_notation(eigenvalues[ith_eigenvalue], 19)} " \
+              f"   {convert_to_scientific_notation(partial_energy, 8)} " \
               f"   {convert_to_scientific_notation(energy_ratio, 4)} ")
     if energy_ratio > threshold:
         console.print(f"[violet]threshold = {threshold} => {ith_eigenvalue+1} PODs sufficient")

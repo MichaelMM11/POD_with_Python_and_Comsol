@@ -48,8 +48,10 @@ solution_matrix = np.genfromtxt(file_to_load, comments='%')
 
 
 
-
 #solution_matrix = np.array([[2, -2, -2/3], [2/3, 2, -2], [2/5, 2/3, 2]])
+
+dim = 10
+#solution_matrix = np.random.random((dim, dim))
 
 U, sigma_i, V_star = linalg.svd(solution_matrix, full_matrices=True)
 # console.print(f"[red]U={U}")
