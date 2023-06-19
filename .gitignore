@@ -4,5 +4,6 @@ py_virt_env/
 src/scipy
 src/__pycache__/
 src/loggings.log
+src/violation*
 git_commit_message.txt
 
