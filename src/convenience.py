@@ -190,7 +190,7 @@ def list_eigenval__partial_energy__energy_ratio(eigenvalues, threshold=1):
     - threshold returns number of eigenvalues needed to have minimum energy level
     """
     log.info("rigid headers-variable leads to magic numbers in other functions.")
-    headers = ('POD index', 'ith eigenvalue', 'part. energy', 'energy ratio')
+    headers = ('POD index', 'ith eigenvalue', 'part. energy', 'energy ratio', 'sigma=sqrt_of_lambda')
     A = compute__eigenval__partial_energy__energy_ratio(eigenvalues, headers)
     list_eigenval__partial_energy__energy_ratio_with_threshold(A, threshold, headers=headers)
     #save__eigenval__partial_energy__energy_ratio(A, headers)
@@ -214,6 +214,7 @@ def compute__eigenval__partial_energy__energy_ratio(eigenvalues, headers):
         data_matrix[ith_eigenvalue][1] = eigenvalues[ith_eigenvalue]
         data_matrix[ith_eigenvalue][2] = partial_energy
         data_matrix[ith_eigenvalue][3] = energy_ratio
+        data_matrix[ith_eigenvalue][4] = np.sqrt(eigenvalues[ith_eigenvalue])
     return data_matrix
 
 
@@ -227,7 +228,7 @@ def list_eigenval__partial_energy__energy_ratio_with_threshold(matrix_a, thresho
     table_of_matrix = tabulate(matrix_a,
                     headers=headers,
                     tablefmt="simple",
-                    floatfmt=(".0f", ".5e", ".2e", ".5e"))
+                    floatfmt=(".0f", ".5e", ".2e", ".5e", ".5e"))
     console.print(f'[blue]{table_of_matrix}')
 
     console.print(f"[yellow]total Energy of System: "
@@ -239,7 +240,7 @@ def list_eigenval__partial_energy__energy_ratio_with_threshold(matrix_a, thresho
                           f"guarantee min. threshold {threshold}: \n"
                           f"energy ratio {matrix_a[i, 3]} > threshold {threshold}")
             return
-    console.print(f"[red]threshold {threshold} seems to require all "
+    console.print(f"[red]threshold value {threshold} seems to require all "
                   "eigenvalues; likely caused by floating comparison")
 
 
@@ -358,6 +359,9 @@ def load_snapshot_matrix_from_comsol(file_to_load, dim=2):
     """
     log.info("when processing issues arise one day think about preparing data "
              "with awk/sed/perl in the first place")
+    log.info("there's now a .sh file that provides the matrices from the"
+             "exported data set, so a simple np.loadtxt is actually"
+             "sufficient and this function a candidate to get sacked")
     #@ this solution suffers however from magigc numbers/restricted to 2d and
     #@ extra effort needed to generalize to 3d
     # awk '{ if($1 != "%"){ $1=$2=""; print $0}} OFS="\t"' input.txt > out.txt
