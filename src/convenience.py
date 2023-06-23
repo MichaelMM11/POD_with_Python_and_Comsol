@@ -68,7 +68,7 @@ from rich.console import Console
 console = Console(highlight=False)
 
 
-def separator(msg):
+def separator(msg="dummy"):
     """makes visible line in shell for convenience"""
     text = f"[yellow]↓ {msg} ↓"
     console.print()
@@ -351,38 +351,134 @@ def print_matrix_where_matrices_elements_are_close(matrix_a, matrix_b):
     console.print(f"{np.isclose(matrix_a, matrix_b)}")
 
 
-def load_snapshot_matrix_from_comsol(file_to_load, dim=2):
+def load_snapshot_matrix_from_comsol(file):
     """
-    - comsol data needs to be prepared for postprocessing, that involves to get
-      rid of comments and to delete mesh coordinates
-    - had issues with np.genfromtxt (less convenient) so I use np.loadtxt
+    - a simple load of file that expects data from comsol is preprocessed, i.e.
+      all comments are removed as well as the first columns (s) that hold mesh
+      points
+    - if file contains however data that do not correspond to snapshots then
+      there is no error thrown but will lead to wrong results at a later stage
     """
-    log.info("when processing issues arise one day think about preparing data "
-             "with awk/sed/perl in the first place")
-    log.info("there's now a .sh file that provides the matrices from the"
-             "exported data set, so a simple np.loadtxt is actually"
-             "sufficient and this function a candidate to get sacked")
-    #@ this solution suffers however from magigc numbers/restricted to 2d and
-    #@ extra effort needed to generalize to 3d
-    # awk '{ if($1 != "%"){ $1=$2=""; print $0}} OFS="\t"' input.txt > out.txt
-    with open(file_to_load, 'r') as f:
-        #? maybe create function like 'return_number_of_snapshots' for
-        #? modular reasons
-        number_of_comments=0
-        for line in f:
-            if line.startswith('%'):
-                num_cols = len(f.readline().split())
-                number_of_comments += 1
-            #@ criterion to stop looking for comments because comsol has fixed 
-            #@ structure and real data starts after metadata
-            if not line.startswith('%'):  #
-                break
-        snapshot_matrix = np.loadtxt(file_to_load,
-                          comments='%',
-                          usecols=range(dim, num_cols))
-        #@ not sure if useful in future => comment
-        #@ function name must be adjunsted then for sure
-        # mesh_coordinates = np.loadtxt(file_to_load,
-        #                   comments='%',
-        #                   usecols=range(0 , dim))
-        return snapshot_matrix
+    return np.loadtxt(file)
+
+
+def show_results_of_vector_matrix_multiplications():
+    """
+    - becaure there are more than one way how to multiply vectors and matrices
+      and I ended up in confusion what operation is allowed and what is the
+      result, I made this overview of provided multiplications to have some
+      kind of reference for myself
+    - I faced some invalid multiplications when I made a forced conversion of
+      a vector to a matrix (check the other aux function for more information)
+      and it turned out that things are not that easy as expected w.r.t input
+      and output dimensions 
+    - another reason is that there is no native row/column vector distinction
+      i.e. both are treated as (x,) ndarray objects with x the number of their
+      elements
+    - message to take home: don't think of row/column vectors as special cases
+      of a matrix and then everything is good; this is what I guessed would
+      easily worked in the first place but it didn't; treat 1d arrays different
+      than 2d arrays (sounds stupid but I had to learn/accept the hard way)
+    """
+    a = np.array([3,1,9])
+    b = np.array([4,8,2])
+    b = b.reshape(-1,1)
+    M = np.array([[0,1,3], [-2,3,4], [0,0,6]])
+    console.print(f"[blue]a = {a}")
+    console.print(f"[yellow]b = {b}")
+    console.print(f"[magenta]M =\n {M}")
+    separator()
+    ab_matmul = np.matmul(a,b)
+    ba_matmul = np.matmul(b,a)
+    console.print(f"[blue]ab_matmul = {ab_matmul}")
+    console.print(f"[blue]ba_matmul = {ba_matmul}")
+    aM_matmul = np.matmul(a,M)
+    Ma_matmul = np.matmul(M,a)
+    console.print(f"[blue]aM_matmul = {aM_matmul}")
+    console.print(f"[blue]Ma_matmul = {Ma_matmul}")
+    separator()
+    ab_multiply = np.multiply(a,b)
+    ba_multiply = np.multiply(b,a)
+    console.print(f"[green]ab_multiply = {ab_multiply}")
+    console.print(f"[green]ba_multiply = {ba_multiply}")
+    aM_multiply = np.multiply(a,M)
+    Ma_multiply = np.multiply(M,a)
+    console.print(f"[green]aM_multiply =\n {aM_multiply}")
+    console.print(f"[green]Ma_multiply =\n {Ma_multiply}")
+    separator()
+    ab_dot = np.dot(a,b)
+    ba_dot = np.dot(b,a)
+    console.print(f"[yellow]ab_dot = {ab_dot}")
+    console.print(f"[yellow]ba_dot = {ba_dot}")
+    aM_dot = np.dot(a,M)
+    Ma_dot = np.dot(M,a)
+    console.print(f"[yellow]aM_dot = {aM_dot}")
+    console.print(f"[yellow]Ma_dot = {Ma_dot}")
+    separator()
+    ab_inner = np.inner(a,b)
+    ba_inner = np.inner(b,a)
+    console.print(f"[cyan]ab_inner = {ab_inner}")
+    console.print(f"[cyan]ba_inner = {ba_inner}")
+    aM_inner = np.inner(a,M)
+    Ma_inner = np.inner(M,a)
+    console.print(f"[cyan]aM_inner = {aM_inner}")
+    console.print(f"[cyan]Ma_inner = {Ma_inner}")
+    separator()
+    ab_outer = np.outer(a,b)
+    ba_outer = np.outer(b,a)
+    console.print(f"[violet]ab_outer =\n {ab_outer}")
+    console.print(f"[violet]ba_outer =\n {ba_outer}")
+    aM_outer = np.outer(a,M)
+    Ma_outer = np.outer(M,a)
+    console.print(f"[violet]aM_outer =\n {aM_outer}")
+    console.print(f"[violet]Ma_outer =\n {Ma_outer}")
+
+
+def show_results_of_array_reshaping():
+    """
+    - originally 1d arrays behave differently than 2d arrays and I happened to
+      encounter confusion when I wanted to multiply such 1d array with 2d
+      array
+      so I started to make a 'forced' conversion of a 1d array to a 2d array
+      with the result that I (again) had results that I didn't expect in the
+      first place
+    - this overview shows what happens to a 1d array when its subjected to
+      dimension transform
+      as you can expect this new object does NOT behave in the same way as a
+      1d array object does and not all multiplications are supported that
+      worked perfectly fine for the original 1d array
+    - triggered by that 
+    - what's lesson learnt? Quite simple: just don't do any forced conversion
+      to have all objects with well-defined np.shape(obj)[0] and
+      np.shape(obj)[1] values to get the convenient feedback if object is row
+      or column vector; in this case don't think of row/column vector as
+      special case of matrix and everything is good, take them as two different
+      kind of objects (even though it's temptating)
+    """
+    separator("starting with (native) row array")
+    a = np.array([3,1,9])
+    console.print(f"[blue]a = {a}")
+    console.print(f"[blue]shape_a = {np.shape(a)}")
+    separator("after a.np.reshape(1,-1)")
+    b = a.reshape(1,-1)
+    console.print(f"[green]b = {b}")
+    console.print(f"[green]shape_b = {np.shape(b)}")
+    separator("after a.np.reshape(-1,1)")
+    c = a.reshape(-1,1)
+    console.print(f"[yellow]c = {c}")
+    console.print(f"[yellow]shape_c = {np.shape(c)}")
+
+    separator("now new array, not row but column, created with reshape(-1,1)")
+
+    d = np.array([3,1,9])
+    d = d.reshape(1,-1)
+    console.print(f"[blue]d = {d}")
+    console.print(f"[blue]shape_d = {np.shape(d)}")
+    separator("after d.np.reshape(1,-1)")
+    e = d.reshape(1,-1)
+    console.print(f"[green]e = {e}")
+    console.print(f"[green]shape_e = {np.shape(e)}")
+    separator("after d.np.reshape(-1,1)")
+    f = d.reshape(-1,1)
+    console.print(f"[yellow]f = {f}")
+    console.print(f"[yellow]shape_f = {np.shape(f)}")
