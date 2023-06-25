@@ -17,8 +17,19 @@ remark
 """
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from tabulate import tabulate
 
+def return_folder_dirs():
+    current__dir = Path.cwd()
+    main__dir = current__dir.parents[0]
+    comsol__dir = main__dir.joinpath('comsol')
+    data__dir = main__dir.joinpath('data')
+    src__dir = main__dir.joinpath('src')
+    dirs = {}
+    dirs['data'] = data__dir
+    dirs['src'] = src__dir
+    return dirs
 
 """
 - creates file where information during runtime is tracked
@@ -33,7 +44,7 @@ from tabulate import tabulate
         log.info("fine")
     except:
         log.exception("should only be used in try/except blocks")
-    - log.warning("should be warning")
+    - log.warning("can be fixed quickly and no forced")
     - log.debug("should be debug")
     - log.critical("should be critical")
 """
@@ -125,194 +136,6 @@ def show_abs_rel_error(num_a, num_b):
     console.print(f"[yellow] Relative error: {rel_err} %")
 
 
-def print_dimemsions_from_matrix(matrix):
-    """returns quick information of matrix dimensions"""
-    rows, columns = get_dimemsions_from_matrix(matrix)
-    print(f"number of rows:    {rows}\nnumber of columns: {columns}")
-
-
-def get_dimemsions_from_matrix(matrix):
-    rows, columns = np.shape(matrix)[0], np.shape(matrix)[1]
-    return rows, columns
-
-
-def calculate_covariance_matrix(matrix):
-    rows, columns = get_dimemsions_from_matrix(matrix)
-    matrix_transpose = np.matrix.transpose(matrix)
-    if rows < columns:
-        covariant_matrix = np.matmul(matrix, matrix_transpose)
-    else:
-        covariant_matrix = np.matmul(matrix_transpose, matrix)
-    covariant_matrix = np.matmul(matrix, matrix_transpose, )
-    return covariant_matrix
-
-
-def return_nth_eigenvalue_eigenvector(number, eigenvalues, eivenvectors):
-    nth_eigenvalues= eigenvalues[: number]
-    nth_eigenvector = eivenvectors[:, number]
-    return nth_eigenvalues, nth_eigenvector
-
-
-def create_nth_reduced_matrix(reduction_number, matrix):
-    return matrix[:reduction_number, :reduction_number]
-
-
-def create_nth_reduced_diag_eigenvalue_matrix(reduction_number, eigenvalues):
-    return np.sqrt(np.diag(eigenvalues[:reduction_number]))
-
-
-def check_eigenvalue_eigenvector_with_matrix(eigenvalues, eigenvectors, matrix):
-    """A*v = λ*v must be true with
-    A: matrix
-    v: eigenvector
-    λ: eigenvalue
-    """
-    for col in range(len(matrix)):
-        Av_eq_lambda_v = np.allclose(
-            np.dot(matrix, eigenvectors[:, col]),
-            np.dot(eigenvalues[col], eigenvectors[:, col]))
-        if not Av_eq_lambda_v:
-            message = f"A*v ≠ λ*v: eigenvector/eigenvalue with index {col} do not hold relationship"
-            console.print(f"[red]{message}")
-
-
-def data_must_have_float_entries(data):
-    """as soon as element (can be array as well) is not a number alert is given"""
-    to_check = np.isnan(data)
-    if True in to_check:
-        message = 'data corrupt'
-        console.print(f"[red]{message}")
-
-
-def list_eigenval__partial_energy__energy_ratio(eigenvalues, threshold=1):
-    """
-    - makes pretty table of eigenvalues and their 'weight'
-    - threshold returns number of eigenvalues needed to have minimum energy level
-    """
-    log.info("rigid headers-variable leads to magic numbers in other functions.")
-    headers = ('POD index', 'ith eigenvalue', 'part. energy', 'energy ratio', 'sigma=sqrt_of_lambda')
-    A = compute__eigenval__partial_energy__energy_ratio(eigenvalues, headers)
-    list_eigenval__partial_energy__energy_ratio_with_threshold(A, threshold, headers=headers)
-    #save__eigenval__partial_energy__energy_ratio(A, headers)
-
-
-def compute__eigenval__partial_energy__energy_ratio(eigenvalues, headers):
-    """
-    - calculates the relative importance of the i-th POD mode as np.matrix
-    """
-    log.info("fix magic numbers: so far order in header variable must match "
-             "in loop...definitely error prone")
-    number_of_eigenvalues = len(eigenvalues)
-    total_energy = np.sum(eigenvalues)
-    partial_energy = 0
-    data_matrix = np.zeros((number_of_eigenvalues, len(headers)))
-
-    for ith_eigenvalue in range(number_of_eigenvalues):
-        partial_energy += eigenvalues[ith_eigenvalue]
-        energy_ratio = partial_energy / total_energy
-        data_matrix[ith_eigenvalue][0] = ith_eigenvalue
-        data_matrix[ith_eigenvalue][1] = eigenvalues[ith_eigenvalue]
-        data_matrix[ith_eigenvalue][2] = partial_energy
-        data_matrix[ith_eigenvalue][3] = energy_ratio
-        data_matrix[ith_eigenvalue][4] = np.sqrt(eigenvalues[ith_eigenvalue])
-    return data_matrix
-
-
-def list_eigenval__partial_energy__energy_ratio_with_threshold(matrix_a, threshold, headers):
-    """
-    - prints the eigenvalue-energy-relationship and returns the threshold value
-      for energy ratio
-    """
-    log.info("to get threshold of required PODs rigid data structure MUST "
-             "be passed that exact way => error prone and should be fixed")
-    table_of_matrix = tabulate(matrix_a,
-                    headers=headers,
-                    tablefmt="simple",
-                    floatfmt=(".0f", ".5e", ".2e", ".5e", ".5e"))
-    console.print(f'[blue]{table_of_matrix}')
-
-    console.print(f"[yellow]total Energy of System: "
-                  f"{convert_to_scientific_notation(matrix_a[-2,-2],4)}")
-    rows, _ = get_dimemsions_from_matrix(matrix_a)
-    for i in range(rows):
-        if matrix_a[i, 3] > threshold:
-            console.print(f"[violet]including {i} POD index needed to "
-                          f"guarantee min. threshold {threshold}: \n"
-                          f"energy ratio {matrix_a[i, 3]} > threshold {threshold}")
-            return
-    console.print(f"[red]threshold value {threshold} seems to require all "
-                  "eigenvalues; likely caused by floating comparison")
-
-
-def save__eigenval__partial_energy__energy_ratio(matrix, headers):
-    """
-    - it is always good idea to have access to data in textfile-form
-    - alternative that avoids pandas
-        with open('table.txt', 'w') as f: f.write(tabulate(...))
-      - see no big difference between both options...
-    """
-    df = pd.DataFrame(data=matrix, columns=headers, )
-    format_mapping = {headers[0]: "{:.0f}",
-                      headers[1]: "{:.10e}",
-                      headers[2]: "{:.10e}",
-                      headers[3]: "{:.10e}"}
-    for key, value in format_mapping.items():
-        df[key] = df[key].apply(value.format)
-    df.to_csv('eigenval_partial_energy_energy_ratio.csv',
-               sep='\t', index=False)
-
-
-def create_full_Sigma_matrix(singular_values, rows=0):
-    """
-    - adds zero matrix with n rows to input matrix
-               sigma_1          0      0           0
-                     0    sigma_2      0           0
-                   ...        ...    ...         ...
-     Sigma =         0          0      0     sigma_n
-                     0          0      0           0
-                    ...        ...    ...         ...
-                     0          0      0           0
-    - default parameter leaves input matrix untouched
-    """
-    Sigma = np.diag(singular_values)
-    _, columns = get_dimemsions_from_matrix(Sigma)
-    return np.concatenate([Sigma, np.zeros((rows, columns))], axis=0)
-
-
-def create_reduced_Sigma_matrix(singular_values):
-    """
-    - example with n different singular values
-               sigma_1          0      0           0
-     Sigma =         0    sigma_2      0           0
-                   ...        ...    ...         ...
-                     0          0      0     sigma_n
-    """
-    return np.diag(singular_values)
-
-
-def return_reduced_matrix_from__U_S_Vstar(U, Sigma, V_star, rank):
-    """returns reduced matrix R
-    - X = U Sigma V_star    (SVD)
-    - R = U Sigma V_star    (POD)
-      BUT U, Sigma, V_star have reduced rank in computation for R
-    """
-    rows, _ = get_dimemsions_from_matrix(U)
-    U = U[:rows, :rank]
-    Sigma = Sigma[:rank, :rank]
-    V_star = V_star[:rank, :rank]
-    return np.matmul(U, np.matmul(Sigma, V_star))
-
-
-def should_np_array_be_completely_displayed(status):
-    """
-    - when np.array is printed to console then for large matrices rows are
-      skipped with ...(three dots)
-    - this function let you switch between full or reduced console display
-    """
-    if status:
-        np.set_printoptions(threshold=np.inf)
-
-
 def set_number_of_digits_after_period(digits=8):
     """
     - toggle function to set number of digits of floates inside an array
@@ -326,29 +149,292 @@ def set_number_of_digits_after_period(digits=8):
         console.print(f"[yellow]{message}")
         digits = 4
     np.set_printoptions(precision=digits)
+def print_dimemsions_from_matrix(matrix):
+    """returns quick information of matrix dimensions"""
+    rows, columns = get_dimemsions_from_matrix(matrix)
+    print(f"number of rows:    {rows}\nnumber of columns: {columns}")
 
 
-def matrices_must_be_numerically_close(matrix_a, matrix_b):
+def should_np_array_be_completely_displayed(status):
     """
-    - due to numeric reasons matrices can be 'equal' even when entries differ
-      mathematically
-    - so these two values for the same row & column in matrix_a and matrix_b
-      are treated to be equal: 6.04347257e-14 and 0.00000000e+0
-    - https://stackoverflow.com/questions/10851246/python-comparing-two-matrices
+    - when np.array is printed to console then for large matrices rows are
+      skipped with ...(three dots)
+    - this function let you switch between full or reduced console display
     """
-    status = np.allclose(matrix_a, matrix_b)
     if status:
-        console.print("[green]matrices are numerically close")
-    else:
-        console.print("[red]matrices are not numerically close")
+        np.set_printoptions(threshold=np.inf)
 
 
-def print_matrix_where_matrices_elements_are_close(matrix_a, matrix_b):
+def get_dimemsions_from_matrix(matrix):
+    rows, columns = np.shape(matrix)[0], np.shape(matrix)[1]
+    return rows, columns
+
+
+def calculate_covariance_matrix(matrix):
     """
-    - mainly useful for debugging to check where two matrices differ
-      numerically
+    - np.cov() does NOT yield results I get by hand calculation, so I stick to
+      the definition
     """
-    console.print(f"{np.isclose(matrix_a, matrix_b)}")
+    snap_rows, _ = get_dimemsions_from_matrix(matrix)
+    return 1/(snap_rows-1)*np.matmul(matrix.T, matrix)
+
+
+def calculate_stored_energy(eigenvalues):
+    #! check if energy is same as 
+    """
+    - sum of eigenvalues of correlation matrix
+    - eigenvalues no need to be sorted
+    """
+    #! another sourse states that E = np.sum(abs(eigenvalues))
+    return np.sum(eigenvalues)
+
+
+def sort_eigenvalues_eigenvectors(eigenval, eigenvec):
+    idx = eigenval.argsort()[::-1]
+    eigenValues = eigenval[idx]
+    eigenVectors = eigenvec[:,idx]
+    return eigenValues, eigenVectors
+
+
+# def return_nth_eigenvalue_eigenvector(number, eigenvalues, eivenvectors):
+#     nth_eigenvalues= eigenvalues[: number]
+#     nth_eigenvector = eivenvectors[:, number]
+#     return nth_eigenvalues, nth_eigenvector
+
+
+# def create_nth_reduced_matrix(reduction_number, matrix):
+#     return matrix[:reduction_number, :reduction_number]
+
+
+# def create_nth_reduced_diag_eigenvalue_matrix(reduction_number, eigenvalues):
+#     return np.sqrt(np.diag(eigenvalues[:reduction_number]))
+
+
+# def check_eigenvalue_eigenvector_with_matrix(eigenvalues, eigenvectors, matrix):
+#     """A*v = λ*v must be true with
+#     A: matrix
+#     v: eigenvector
+#     λ: eigenvalue
+#     """
+#     for col in range(len(matrix)):
+#         Av_eq_lambda_v = np.allclose(
+#             np.dot(matrix, eigenvectors[:, col]),
+#             np.dot(eigenvalues[col], eigenvectors[:, col]))
+#         if not Av_eq_lambda_v:
+#             message = f"A*v ≠ λ*v: eigenvector/eigenvalue with index {col} do not hold relationship"
+#             console.print(f"[red]{message}")
+
+
+# def data_must_have_float_entries(data):
+#     """as soon as element (can be array as well) is not a number alert is given"""
+#     to_check = np.isnan(data)
+#     if True in to_check:
+#         message = 'data corrupt'
+#         console.print(f"[red]{message}")
+
+
+def show_save_eigenvalue_energy_data(descending_eigenvalues, threshold=1):
+    """
+    - eigenvalues must be in descending order, otherwise GIGO
+    #! - despite being a monolith and heavily violates the principle that a
+    #!   function should do one and only ONE thing I keep this here as it is 
+    #!   because of internal dependencies
+    #! - the function can be divided into many smaller functions but each one
+    #!   needs more than one input parameter and then the dependencies get
+    #!   passed as returns and inputs parameter
+    #!   => nothing gained at the end of the day except making things look more
+    #!      complex than it actually is
+    #! - as long as there is no need for improvement I think readability is
+    #!   better given by this monolith and 
+"""
+    table_settings = {
+        "POD":           {"col_position": 0, "notation": '.0f'},
+        "eigenval":      {"col_position": 1, "notation": '0.1f'},
+        "acc_eigenval":  {"col_position": 3, "notation": '0.4f'},
+        "part_E":        {"col_position": 4, "notation": '0.2e'},
+        "sigma":         {"col_position": 2, "notation": '0.2e'},
+        "acc_part_E":    {"col_position": 5, "notation": '0.6f'},
+        }
+
+    #@ - make setup for internal variables
+    number_of_columns = len(table_settings)
+    number_of_eigenvalues = len(descending_eigenvalues)
+    total_energy = np.sum(descending_eigenvalues)
+    partial_energy = 0
+    accumulated_partial_energy = 0
+    acc_eigenval = 0
+    data_matrix = np.zeros((number_of_eigenvalues, number_of_columns))
+
+
+    #@ - column names and notations need to be sorted as declared in
+    #@   table settings (this makes it easy in future version to add another)
+    #@   column if needed without changing anything else
+    #@ - this also makes table more dynamic and no magic numbers needed
+    #@   (because single source of truth)
+    col_positions = []
+    notations = []
+    for i in table_settings:
+        notations.append(table_settings[i]['notation'])
+        col_positions.append(table_settings[i]['col_position'])
+    col_names = tuple(table_settings.keys())
+
+
+    def check_if_columns_have_different_indices():
+        for i in range(len(col_positions)):
+            if i not in col_positions:
+                message = 'WARNING: column header positions are not all ' \
+                'different or first column does not start with index 0'
+                console.print(f"[yellow]{message}")
+                log.warning(message)
+    check_if_columns_have_different_indices()
+
+
+    #@ - needed because when indices are not in ascending order there is mismatch
+    #@   between column names and values
+    def sort_by_indexes(lst, indexes, reverse=False):
+        #@ - https://www.w3resource.com/python-exercises/list/python-data-type-list-exercise-218.php
+        return [val for (_, val) in sorted(zip(indexes, lst), key=lambda x: \
+            x[0], reverse=reverse)]
+    col_names = sort_by_indexes(col_names, col_positions)
+    notations = sort_by_indexes(notations, col_positions)
+
+
+    #@ - could actually add switch to decide if column should be printed or not
+    #@   but that is 1) over-engineering and 2) not useful at all because at
+    #@   later post-processing only the columns in need can be selected
+    #@   to the actual computation; would only bloat code for smug satisfaction
+    for i in range(number_of_eigenvalues):
+        partial_energy = descending_eigenvalues[i] / total_energy
+        accumulated_partial_energy += partial_energy
+        acc_eigenval += descending_eigenvalues[i]
+
+        data_matrix[i][table_settings["POD"]['col_position']] = i + 1
+        data_matrix[i][table_settings["eigenval"]['col_position']] = descending_eigenvalues[i]
+        data_matrix[i][table_settings["sigma"]['col_position']] = np.sqrt(descending_eigenvalues[i])
+        data_matrix[i][table_settings["part_E"]['col_position']] = partial_energy
+        data_matrix[i][table_settings["acc_part_E"]['col_position']] = accumulated_partial_energy
+        data_matrix[i][table_settings["acc_eigenval"]['col_position']] = acc_eigenval
+
+
+    def return_POD_for_threshold_energy(threshold):
+        if not (0 < threshold <= 1): 
+            message = 'WARNING: threshold value not in (0,1]\n' \
+            'program continues with threshold = 1'
+            console.print(f"[yellow]{message}")
+            log.warning(message)
+            threshold = 1
+
+        threshold_reached = False
+        for i in range(number_of_eigenvalues):
+            current_threshold_value = data_matrix[i][table_settings["acc_part_E"]['col_position']]
+            if (current_threshold_value >= threshold) \
+            and (not threshold_reached):
+                console.print(f"[magenta]{i + 1} PODs index needed to "
+                            f"guarantee min. threshold {threshold}: \n"
+                            f"acc_part_E {current_threshold_value:.4f} >= threshold {threshold}")
+                threshold_reached = True
+    return_POD_for_threshold_energy(threshold)
+
+
+    def check_if_accumulated_partial_energy_equals_one():
+        if accumulated_partial_energy != 1:
+            message = 'ERROR: accumulated energy does not sum up to 1!'
+            console.print(f"[red]{message}")
+            log.error(message)
+    check_if_accumulated_partial_energy_equals_one()
+
+
+    def show_table_in_console():
+        table_of_matrix = tabulate(
+            data_matrix,
+            headers=col_names,
+            tablefmt="simple",
+            floatfmt=notations)
+        console.print(f'[cyan]{table_of_matrix}')
+    show_table_in_console()
+
+
+    def save_table_to_file():
+    #@ - have to modify notation of each column because tabulate asks for
+    #@   different syntax than DataFrame
+    #@ - https://stackoverflow.com/questins/32744997/apply-formatting-to-each-column-in-dataframe-using-a-dict-mapping
+        folder_dir = return_folder_dirs()
+        filename = 'eigenvalue_energy_table.dat'
+        eigenvalue_energy_table = Path(folder_dir['data'], filename)
+
+        df = pd.DataFrame(data=data_matrix, columns=col_names)
+        panda_formatter = {}
+        for i in table_settings:
+            panda_formatter[i] = f"{{:{table_settings[i]['notation']}}}"
+        format_mapping = panda_formatter
+        for key, value in format_mapping.items():
+            df[key] = df[key].apply(value.format)
+        df.to_csv(eigenvalue_energy_table, sep='\t', index=False)
+    save_table_to_file()
+
+
+# def create_full_Sigma_matrix(singular_values, rows=0):
+#     """
+#     - adds zero matrix with n rows to input matrix
+#                sigma_1          0      0           0
+#                      0    sigma_2      0           0
+#                    ...        ...    ...         ...
+#      Sigma =         0          0      0     sigma_n
+#                      0          0      0           0
+#                     ...        ...    ...         ...
+#                      0          0      0           0
+#     - default parameter leaves input matrix untouched
+#     """
+#     Sigma = np.diag(singular_values)
+#     _, columns = get_dimemsions_from_matrix(Sigma)
+#     return np.concatenate([Sigma, np.zeros((rows, columns))], axis=0)
+
+
+def create_reduced_Sigma_matrix(singular_values):
+    """
+    - example with n different singular values
+               sigma_1          0      0           0
+     Sigma =         0    sigma_2      0           0
+                   ...        ...    ...         ...
+                     0          0      0     sigma_n
+    """
+    return np.diag(singular_values)
+
+
+# def return_reduced_matrix_from__U_S_Vstar(U, Sigma, V_star, rank):
+#     """returns reduced matrix R
+#     - X = U Sigma V_star    (SVD)
+#     - R = U Sigma V_star    (POD)
+#       BUT U, Sigma, V_star have reduced rank in computation for R
+#     """
+#     rows, _ = get_dimemsions_from_matrix(U)
+#     U = U[:rows, :rank]
+#     Sigma = Sigma[:rank, :rank]
+#     V_star = V_star[:rank, :rank]
+#     return np.matmul(U, np.matmul(Sigma, V_star))
+
+
+# def matrices_must_be_numerically_close(matrix_a, matrix_b):
+#     """
+#     - due to numeric reasons matrices can be 'equal' even when entries differ
+#       mathematically
+#     - so these two values for the same row & column in matrix_a and matrix_b
+#       are treated to be equal: 6.04347257e-14 and 0.00000000e+0
+#     - https://stackoverflow.com/questions/10851246/python-comparing-two-matrices
+#     """
+#     status = np.allclose(matrix_a, matrix_b)
+#     if status:
+#         console.print("[green]matrices are numerically close")
+#     else:
+#         console.print("[red]matrices are not numerically close")
+
+
+# def print_matrix_where_matrices_elements_are_close(matrix_a, matrix_b):
+#     """
+#     - mainly useful for debugging to check where two matrices differ
+#       numerically
+#     """
+#     console.print(f"{np.isclose(matrix_a, matrix_b)}")
 
 
 def load_snapshot_matrix_from_comsol(file):
@@ -482,3 +568,4 @@ def show_results_of_array_reshaping():
     f = d.reshape(-1,1)
     console.print(f"[yellow]f = {f}")
     console.print(f"[yellow]shape_f = {np.shape(f)}")
+

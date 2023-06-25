@@ -28,11 +28,11 @@
         2. [X] multiply by transpose matrix
         3. [X] calcualte eigenvec/val of these matrix
         4. [X] clean coded
-        5. [X] make reduced matrices (of eigenvectors/eigenvalues)
-        6. [X] check if everything is alright so far
+        5. [-] make reduced matrices (of eigenvectors/eigenvalues)
+        6. [ ] check if everything is alright so far
         7. [ ] load reduced matrix into Comsol and evaluate results
-        8. [ ] try to predict values from reduced matrix with respect to 'solution matrix'
-- [ ] deepen knowledge in matrix LA
+        8. [-] try to predict values from reduced matrix with respect to 'solution matrix'
+- [X] deepen knowledge in matrix LA
 - [ ] write down theory of SVD, POD
 * current questions [5/5]
 - [X] Q: why MPh package? https://github.com/MPh-py/MPh
