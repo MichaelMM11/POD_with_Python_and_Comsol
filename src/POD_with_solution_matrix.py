@@ -33,9 +33,10 @@ from convenience import *
 import numpy as np
 from pathlib import Path
 
+from numpy.linalg import inv
 
-# should_np_array_be_completely_displayed(True)
-# set_number_of_digits_after_period(6)
+should_np_array_be_completely_displayed(True)
+set_number_of_digits_after_period(1)
 
 folder_dir = return_folder_dirs()
 
@@ -49,37 +50,65 @@ data_file = Path(data__dir, filename)
 
 U = np.array([[0,1,3,0], [-2,3,0,4], [0,0,6,1], [0,0,1,6]])
 
+console.print(f"[red]U =\n {U}")
 C = calculate_covariance_matrix(U)
+console.print(f"[yellow]C =\n {C}")
+#TKE = calculate_stored_energy(C)
 
-TKE = calculate_stored_energy(C)
+separator()
+eigenvalue, eigenvector = np.linalg.eig(C)
+console.print(f"[cyan]eigenvalue =\n {eigenvalue}")
+console.print(f"[blue]eigenvector =\n {eigenvector}")
 
-lambdas, Phis = np.linalg.eig(U)  #@ M for debugging, but must be C
+separator()
+sorted_eigenvalues, sorted_eigenvectors = sort_eigenvalues_eigenvectors(eigenvalue, eigenvector)
+console.print(f"[cyan]sorted_eigenvalues =\n {sorted_eigenvalues}")
+console.print(f"[blue]sorted_eigenvectors =\n {sorted_eigenvectors}")
 
-sorted_eigenvalues, sorted_eigenvectors = sort_eigenvalues_eigenvectors(lambdas, Phis)
 
 
-show_save_eigenvalue_energy_data(sorted_eigenvalues, 0.9)
 
+separator()
+#show_save_eigenvalue_energy_data(sorted_eigenvalues, 0.9)
 diag_lambda = create_reduced_Sigma_matrix(sorted_eigenvalues)
+console.print(f"[magenta]diag_lambda =\n {diag_lambda}")
+
+#@ OK
+newC = np.matmul(sorted_eigenvectors,np.matmul(diag_lambda,sorted_eigenvectors.T))
+console.print(f"[green]newC =\n {newC}")
+console.print(f"[blue]C =\n {C}")
+
+#@
+Phi_m = inv(eigenvector)
+Phi_t = eigenvector.T
+console.print(f"[green]Phi_m =\n {Phi_m}")
+console.print(f"[blue]Phi_t =\n {Phi_t}")
 
 
-X = np.matmul(Phis, np.matmul(diag_lambda, Phis.T))
-console.print(f'[red]X = \n {X}')
+A = np.matmul(U, eigenvector)
+print(A)
 
-console.print(f'[red]C = \n {C}')
-exit()
-A = np.matmul(U, sorted_eigenvectors)
+#@ OK
+newU = np.matmul(A, eigenvector.T)
+console.print(f"[green]newU =\n {newU}")
+console.print(f"[blue]U =\n {U}")
 
-X = np.matmul(A,sorted_eigenvectors.T)
-console.print(f"[green]A =\n {X}")
 
+
+#@ OK
+oldU = np.zeros((4,4))
+for k in range(4):
+    Utilde = np.outer(A[:,k], eigenvector[:,k].T)
+    console.print(f"[yellow]Utilde = \n{Utilde}")
+    oldU += Utilde
+console.print(f"[violet]oldU =\n{oldU}")
+console.print(f"[magenta]U =\n{U}")
 
 # def k_th_U_matrix(k, Q, W):
 #     """
 #     - returns the k_th contribution of the k_th eigenvalue/-vector
 #     """
 #     pass
-
 
 
 # def return_matrix_of_summarized_k_th_reduced_POD(number_of_PODs):
@@ -91,40 +120,6 @@ console.print(f"[green]A =\n {X}")
 # #@   and so on...goes iteratively
 #     for i in range(number_of_PODs):
 #         pass
-
-
-
-
-exit()
-# snapshot_matrix = Path(data__dir, "snapshot_matrix____raw_data.txt")
-# U = load_snapshot_matrix_from_comsol(snapshot_matrix)
-
-# snap_rows, snap_cols = get_dimemsions_from_matrix(U)
-# snap_transpose = np.matrix.transpose(U)
-
-# covariant_matrix = 1/(snap_rows-1)*np.matmul(snap_transpose, U)
-
-# TKE = 1/(2*(snap_rows-1))*np.matrix.trace(covariant_matrix)
-
-# LAMBDA, PHI = np.linalg.eig(covariant_matrix)  #! not sorted
-# #@ - sort eigenvalues and eigenvectors form high to low and the eigenvector 
-# #@   matrix
-# idx = LAMBDA.argsort()[::-1]
-# eigenValues = LAMBDA[idx]
-# eigenVectors = PHI[:,idx]
-# list_eigenval__partial_energy__energy_ratio(eigenValues)
-
-# diag_lambda = create_reduced_Sigma_matrix(eigenValues)
-
-
-# eigenVectors_transpose = np.matrix.transpose(eigenVectors)
-
-# A = np.matmul(U, eigenVectors)
-# also_U = np.matmul(A, PHI.T)
-
-
-
-
 
 
 
