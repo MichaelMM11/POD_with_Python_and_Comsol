@@ -45,85 +45,63 @@ data__dir = folder_dir['data']
 data_file = Path(data__dir, filename)
 
 
-# snapshot_matrix = Path(data__dir, "snapshot_matrix____raw_data.txt")
-# U = load_snapshot_matrix_from_comsol(snapshot_matrix)
+snapshot_matrix = Path(data__dir, "snapshot_matrix____raw_data.txt")
+U = load_snapshot_matrix_from_comsol(snapshot_matrix)
+U =U.T
+#U = np.array([[0,1,3,0], [-2,3,0,4], [0,0,6,1], [0,0,1,6]])
 
-U = np.array([[0,1,3,0], [-2,3,0,4], [0,0,6,1], [0,0,1,6]])
-
-console.print(f"[red]U =\n {U}")
+# console.print(f"[red]U =\n {U}")
 C = calculate_covariance_matrix(U)
-console.print(f"[yellow]C =\n {C}")
+# console.print(f"[yellow]C =\n {C}")
 #TKE = calculate_stored_energy(C)
 
 separator()
 eigenvalue, eigenvector = np.linalg.eig(C)
-console.print(f"[cyan]eigenvalue =\n {eigenvalue}")
-console.print(f"[blue]eigenvector =\n {eigenvector}")
+# console.print(f"[cyan]eigenvalue =\n {eigenvalue}")
+# console.print(f"[blue]eigenvector =\n {eigenvector}")
 
 separator()
 sorted_eigenvalues, sorted_eigenvectors = sort_eigenvalues_eigenvectors(eigenvalue, eigenvector)
-console.print(f"[cyan]sorted_eigenvalues =\n {sorted_eigenvalues}")
-console.print(f"[blue]sorted_eigenvectors =\n {sorted_eigenvectors}")
+# console.print(f"[cyan]sorted_eigenvalues =\n {sorted_eigenvalues}")
+# console.print(f"[blue]sorted_eigenvectors =\n {sorted_eigenvectors}")
 
 
 
 
 separator()
-#show_save_eigenvalue_energy_data(sorted_eigenvalues, 0.9)
+energy_ratio = 0.9999
+show_save_eigenvalue_energy_data(sorted_eigenvalues, energy_ratio)
 diag_lambda = create_reduced_Sigma_matrix(sorted_eigenvalues)
-console.print(f"[magenta]diag_lambda =\n {diag_lambda}")
+# console.print(f"[magenta]diag_lambda =\n {diag_lambda}")
 
 #@ OK
 newC = np.matmul(sorted_eigenvectors,np.matmul(diag_lambda,sorted_eigenvectors.T))
-console.print(f"[green]newC =\n {newC}")
-console.print(f"[blue]C =\n {C}")
+# console.print(f"[green]newC =\n {newC}")
+# console.print(f"[blue]C =\n {C}")
 
-#@
+#@ OK
 Phi_m = inv(eigenvector)
 Phi_t = eigenvector.T
-console.print(f"[green]Phi_m =\n {Phi_m}")
-console.print(f"[blue]Phi_t =\n {Phi_t}")
-
-
+# console.print(f"[green]Phi_m =\n {Phi_m}")
+# console.print(f"[blue]Phi_t =\n {Phi_t}")
+#@ OK
 A = np.matmul(U, eigenvector)
-print(A)
+# console.print(f"[violet]A =\n {A}")
 
 #@ OK
 newU = np.matmul(A, eigenvector.T)
-console.print(f"[green]newU =\n {newU}")
-console.print(f"[blue]U =\n {U}")
+# console.print(f"[green]newU =\n {newU}")
+# console.print(f"[blue]U =\n {U}")
 
-
+# matrices_must_be_numerically_close(U, newU)
 
 #@ OK
-oldU = np.zeros((4,4))
-for k in range(4):
-    Utilde = np.outer(A[:,k], eigenvector[:,k].T)
-    console.print(f"[yellow]Utilde = \n{Utilde}")
-    oldU += Utilde
-console.print(f"[violet]oldU =\n{oldU}")
-console.print(f"[magenta]U =\n{U}")
-
-# def k_th_U_matrix(k, Q, W):
-#     """
-#     - returns the k_th contribution of the k_th eigenvalue/-vector
-#     """
-#     pass
+POD_modes = 6
+U_tilde = return_matrix_of_summarized_k_th_reduced_POD(A, eigenvector, POD_modes)
 
 
-# def return_matrix_of_summarized_k_th_reduced_POD(number_of_PODs):
-# #@ - eq 25 suggests that for 1 POD first column of A multiplied with first row
-# #@   vector of PHI, so col x row => matrix [contribution of 1st mode]
-# #@ - same for second mode, 2nd col of A times 2nd row of PHI => this contibution
-# #@   of 2nd mode
-# #@ - adding first contribution and second contribution results in POD of order 2
-# #@   and so on...goes iteratively
-#     for i in range(number_of_PODs):
-#         pass
-
-
-
-
-
-
-
+# matrices_must_be_numerically_close(U_tilde, U)
+#@ OK
+filename = f'reduced_matrix_reduction_{POD_modes}.dat'
+reduced_matrix_reduction_ = Path(folder_dir['data'], filename)
+np.savetxt(reduced_matrix_reduction_, U, delimiter='\t')

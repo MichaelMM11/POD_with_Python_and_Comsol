@@ -15,6 +15,7 @@ remark
 """ imports
 - almost any of these imports is needed in almost any function
 """
+import math
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -149,6 +150,8 @@ def set_number_of_digits_after_period(digits=8):
         console.print(f"[yellow]{message}")
         digits = 4
     np.set_printoptions(precision=digits)
+
+
 def print_dimemsions_from_matrix(matrix):
     """returns quick information of matrix dimensions"""
     rows, columns = get_dimemsions_from_matrix(matrix)
@@ -249,8 +252,8 @@ def show_save_eigenvalue_energy_data(descending_eigenvalues, threshold=1):
 """
     table_settings = {
         "POD":           {"col_position": 0, "notation": '.0f'},
-        "eigenval":      {"col_position": 1, "notation": '0.1f'},
-        "acc_eigenval":  {"col_position": 3, "notation": '0.4f'},
+        "eigenval":      {"col_position": 1, "notation": '0.2e'},
+        "acc_eigenval":  {"col_position": 3, "notation": '0.2e'},
         "part_E":        {"col_position": 4, "notation": '0.2e'},
         "sigma":         {"col_position": 2, "notation": '0.2e'},
         "acc_part_E":    {"col_position": 5, "notation": '0.6f'},
@@ -309,11 +312,11 @@ def show_save_eigenvalue_energy_data(descending_eigenvalues, threshold=1):
         acc_eigenval += descending_eigenvalues[i]
 
         data_matrix[i][table_settings["POD"]['col_position']] = i + 1
-        data_matrix[i][table_settings["eigenval"]['col_position']] = descending_eigenvalues[i]
-        data_matrix[i][table_settings["sigma"]['col_position']] = np.sqrt(descending_eigenvalues[i])
-        data_matrix[i][table_settings["part_E"]['col_position']] = partial_energy
-        data_matrix[i][table_settings["acc_part_E"]['col_position']] = accumulated_partial_energy
-        data_matrix[i][table_settings["acc_eigenval"]['col_position']] = acc_eigenval
+        data_matrix[i][table_settings["eigenval"]['col_position']] = descending_eigenvalues[i].real
+        data_matrix[i][table_settings["sigma"]['col_position']] = np.sqrt(descending_eigenvalues[i]).real
+        data_matrix[i][table_settings["part_E"]['col_position']] = partial_energy.real
+        data_matrix[i][table_settings["acc_part_E"]['col_position']] = accumulated_partial_energy.real
+        data_matrix[i][table_settings["acc_eigenval"]['col_position']] = acc_eigenval.real
 
 
     def return_POD_for_threshold_energy(threshold):
@@ -329,27 +332,41 @@ def show_save_eigenvalue_energy_data(descending_eigenvalues, threshold=1):
             current_threshold_value = data_matrix[i][table_settings["acc_part_E"]['col_position']]
             if (current_threshold_value >= threshold) \
             and (not threshold_reached):
-                console.print(f"[magenta]{i + 1} PODs index needed to "
-                            f"guarantee min. threshold {threshold}: \n"
+                console.print(f"[magenta]{i + 1} PODs needed to guarantee min "
+                            f"threshold {threshold}: \n"
                             f"acc_part_E {current_threshold_value:.4f} >= threshold {threshold}")
                 threshold_reached = True
     return_POD_for_threshold_energy(threshold)
 
 
     def check_if_accumulated_partial_energy_equals_one():
-        if accumulated_partial_energy != 1:
-            message = 'ERROR: accumulated energy does not sum up to 1!'
+        """
+        - it's never good idea to compare floats directly because of rounding
+          errors
+        - https://note.nkmk.me/en/python-math-isclose/
+        """
+        if not math.isclose(accumulated_partial_energy.real, 1, rel_tol=1e-3):
+            message = 'ERROR: accumulated energy does not sum up to 1!\n' \
+                    f'accumulated_partial_energy: {accumulated_partial_energy}'
             console.print(f"[red]{message}")
             log.error(message)
     check_if_accumulated_partial_energy_equals_one()
 
 
-    def show_table_in_console():
+    def show_table_in_console(rows=11):
+    #! - can be obsolete because all can be done in pandas
+    #! - actually cleaner approach because "given on the fly"
         table_of_matrix = tabulate(
             data_matrix,
             headers=col_names,
             tablefmt="simple",
             floatfmt=notations)
+        #@ - little workaround to show not all but the first n rows
+        # counter = 0
+        # for i in table_of_matrix.splitlines():
+        #     counter += 1
+        #     print(i)
+        #     if counter == rows+2: return
         console.print(f'[cyan]{table_of_matrix}')
     show_table_in_console()
 
@@ -361,7 +378,6 @@ def show_save_eigenvalue_energy_data(descending_eigenvalues, threshold=1):
         folder_dir = return_folder_dirs()
         filename = 'eigenvalue_energy_table.dat'
         eigenvalue_energy_table = Path(folder_dir['data'], filename)
-
         df = pd.DataFrame(data=data_matrix, columns=col_names)
         panda_formatter = {}
         for i in table_settings:
@@ -369,6 +385,13 @@ def show_save_eigenvalue_energy_data(descending_eigenvalues, threshold=1):
         format_mapping = panda_formatter
         for key, value in format_mapping.items():
             df[key] = df[key].apply(value.format)
+        
+        #@ - makes the function "show_table_in_console" obsolete and adds the
+        #@   option to show not all columns but the first/last n ones
+        #@ - only drawback is, that there are not separators between header
+        #@   and data AND that the column width cannot be broader
+        # console.print(f'[red]{df[:4]}') 
+        
         df.to_csv(eigenvalue_energy_table, sep='\t', index=False)
     save_table_to_file()
 
@@ -398,6 +421,8 @@ def create_reduced_Sigma_matrix(singular_values):
                    ...        ...    ...         ...
                      0          0      0     sigma_n
     """
+    message = "WARNING: rename this function into telling name function"
+    log.warning(message)
     return np.diag(singular_values)
 
 
@@ -411,22 +436,24 @@ def create_reduced_Sigma_matrix(singular_values):
 #     U = U[:rows, :rank]
 #     Sigma = Sigma[:rank, :rank]
 #     V_star = V_star[:rank, :rank]
+#     message = "WARNING: rename this function into telling name function"
+#     log.warning(message)
 #     return np.matmul(U, np.matmul(Sigma, V_star))
 
 
-# def matrices_must_be_numerically_close(matrix_a, matrix_b):
-#     """
-#     - due to numeric reasons matrices can be 'equal' even when entries differ
-#       mathematically
-#     - so these two values for the same row & column in matrix_a and matrix_b
-#       are treated to be equal: 6.04347257e-14 and 0.00000000e+0
-#     - https://stackoverflow.com/questions/10851246/python-comparing-two-matrices
-#     """
-#     status = np.allclose(matrix_a, matrix_b)
-#     if status:
-#         console.print("[green]matrices are numerically close")
-#     else:
-#         console.print("[red]matrices are not numerically close")
+def matrices_must_be_numerically_close(matrix_a, matrix_b, rel_tol=1e-10):
+    """
+    - due to numeric reasons matrices can be 'equal' even when entries differ
+      mathematically
+    - so these two values for the same row & column in matrix_a and matrix_b
+      are treated to be equal: 6.04347257e-14 and 0.00000000e+0
+    - https://stackoverflow.com/questions/10851246/python-comparing-two-matrices
+    """
+    status = np.allclose(matrix_a, matrix_b, rtol=rel_tol)
+    if status:
+        console.print("[green]matrices are numerically close")
+    else:
+        console.print("[red]matrices are not numerically close")
 
 
 # def print_matrix_where_matrices_elements_are_close(matrix_a, matrix_b):
@@ -592,3 +619,28 @@ def show_results_of_array_reshaping():
     console.print(f"[yellow]f = {f}")
     console.print(f"[yellow]shape_f = {np.shape(f)}")
 
+
+def k_th_U_matrix(A, eigenvector, k):
+    """
+    - returns the k_th contribution of the k_th eigenvalue/-vector
+    """
+    U_k = np.outer(A[:,k], eigenvector[:,k].T).real
+    return U_k
+
+
+def return_matrix_of_summarized_k_th_reduced_POD(A, eigenvector, k):
+    rows, cols = get_dimemsions_from_matrix(A)
+
+    if k >= max(rows,cols):
+        message = f'WARNING: reduced rank was higher than max(rows, cols)' \
+        f': {k} > max({rows},{cols})' \
+        f'\nprogram continues with rank = {max(rows, cols)}'
+        console.print(f"[yellow]{message}")
+        log.warning(message)
+        k = max(rows,cols)
+
+    U_tilde = np.zeros((rows,cols))
+    for k in range(k):
+        U_k = k_th_U_matrix(A, eigenvector, k)
+        U_tilde += U_k
+    return U_tilde
