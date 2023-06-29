@@ -362,12 +362,12 @@ def show_save_eigenvalue_energy_data(descending_eigenvalues, threshold=1):
             tablefmt="simple",
             floatfmt=notations)
         #@ - little workaround to show not all but the first n rows
-        # counter = 0
-        # for i in table_of_matrix.splitlines():
-        #     counter += 1
-        #     print(i)
-        #     if counter == rows+2: return
-        console.print(f'[cyan]{table_of_matrix}')
+        counter = 0
+        for i in table_of_matrix.splitlines():
+            counter += 1
+            print(i)
+            if counter == rows+2: return
+        #console.print(f'[cyan]{table_of_matrix}')
     show_table_in_console()
 
 

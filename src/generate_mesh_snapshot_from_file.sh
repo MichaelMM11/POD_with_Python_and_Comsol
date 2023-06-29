@@ -7,6 +7,9 @@
 #      - to manipulate COMSOL file that only matrix is left                     #
 #        - so the first column(s) that contain the information about the mesh   #
 #          position is cut of as well as metadata header marked as comment      #
+#      - but any other file that has data in matrix format can be passed        #
+#        because the filter that applies to COMSOL simply has no effect then    #
+#        and at the end of the day they generate the same output files          #
 #                                                                               #
 #  remark                                                                       #
 #      - so far no tests are done with large, Large, LARGE files, it can turn   #
@@ -45,11 +48,11 @@ delete_lines_starting_with_comment(){
 }
 
 return_snapshot_matrix(){
-    cut --complement -f"$dimension" "$comsol_data_file" > "$snapshot_matrix"
+    cut --complement -f"$dimension" "$comsol_data_file" > "$snapshot_file"
 }
 
 return_mesh_matrix(){
-    cut  -f"$dimension" "$comsol_data_file" > "$mesh_matrix"
+    cut  -f"$dimension" "$comsol_data_file" > "$mesh_file"
 }
 
 display_final_message(){
@@ -57,7 +60,7 @@ display_final_message(){
 }
 
 select_geometrical_dimension_of_data(){
-    PS3="Enter dimension to be reduced from Comsol: "
+    echo -e "\e[0;33mEnter dimension to be reduced from Comsol: \e[0m"
     options=('1d (x)'
              '2d (x,y)'
              '3d (x,y,z)')
@@ -90,8 +93,15 @@ retrun_generated_snapshot_mesh_data(){
     return_mesh_matrix
 }
 
+display_generated_files(){
+    echo -e "\e[0;33m$comsol_data_file\e[0m generated"
+    echo -e "- \e[0;32m$snapshot_file\e[0m"
+    echo -e "- \e[0;32m$mesh_file\e[0m"
+    echo
+}
+
 select_folder(){
-    PS3="Enter number to select directory: "
+    echo -e "\e[0;33mEnter number to select directory\e[0m"
     options=('current folder'
              '/home/michael/Git/POD_with_Python_and_Comsol/data/'
              '/home/michael/Git/stiffness_matrix____PETSc/data/'
@@ -120,8 +130,9 @@ select_folder(){
 
 select_data_file(){
     list_files_in_folder
-    #find . -maxdepth 1 -type f
-    read -rp "set filename: " comsol_data_file
+
+    echo -en "\e[0;33mset COMSOL/matrix data file: \e[0m"
+    read -rp "" comsol_data_file
     if ! [ -f "$comsol_data_file"  ]; then
         echo -ne "\e[0;31mERROR: current folder does not contain file: "
         echo -e "$comsol_data_file\e[0;37m"
@@ -133,14 +144,19 @@ list_files_in_folder(){
 #@ - https://stackoverflow.com/questions/2437452/how-to-get-the-list-of-files-in-a-directory-in-a-shell-script
 #@ - a friendly gesture to copy&paste file on the fly and avoid copying from
 #@   some other window
-    echo -e "\e[0;33mfolder contains following files to choose:\e[0m"
+    echo -e "\e[0;35m\nfolder contains following files to choose"
+    echo -e "=========================================\e[0m"
     find . -maxdepth 1 -type f -not -path '*/\.*' | sed 's/^\.\///g' | sort
     echo
 }
 
 define_snapshot_mesh_filenames(){
-    snapshot_matrix=snapshot_matrix____"$comsol_data_file"
-    mesh_matrix=mesh_matrix____"$comsol_data_file"
+#@ - to have consistent filename structure the semantic part is added to the
+#@   filename; for this the suffix needs to be removed and added with the
+#@   information
+    trunk_of_comsol_data=${comsol_data_file%.*}  #@ remove suffix
+    snapshot_file="$trunk_of_comsol_data"__snapshots.dat
+    mesh_file="$trunk_of_comsol_data"__mesh.dat
 }
 
 main(){
@@ -150,6 +166,7 @@ main(){
     select_geometrical_dimension_of_data
     apply_blind_algorithm
     retrun_generated_snapshot_mesh_data
+    display_generated_files
     display_final_message
 }
 

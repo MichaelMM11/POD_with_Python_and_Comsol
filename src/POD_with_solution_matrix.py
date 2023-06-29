@@ -45,7 +45,7 @@ data__dir = folder_dir['data']
 data_file = Path(data__dir, filename)
 
 
-snapshot_matrix = Path(data__dir, "snapshot_matrix____raw_data.txt")
+snapshot_matrix = Path(data__dir, "raw_data__snapshots.dat")
 U = load_snapshot_matrix_from_comsol(snapshot_matrix)
 U =U.T
 #U = np.array([[0,1,3,0], [-2,3,0,4], [0,0,6,1], [0,0,1,6]])
@@ -96,12 +96,13 @@ newU = np.matmul(A, eigenvector.T)
 # matrices_must_be_numerically_close(U, newU)
 
 #@ OK
-POD_modes = 6
-U_tilde = return_matrix_of_summarized_k_th_reduced_POD(A, eigenvector, POD_modes)
+for i in range(1,6):
+    POD_modes = i
+    U_tilde = return_matrix_of_summarized_k_th_reduced_POD(A, eigenvector, POD_modes)
 
 
-# matrices_must_be_numerically_close(U_tilde, U)
-#@ OK
-filename = f'reduced_matrix_reduction_{POD_modes}.dat'
-reduced_matrix_reduction_ = Path(folder_dir['data'], filename)
-np.savetxt(reduced_matrix_reduction_, U, delimiter='\t')
+    # matrices_must_be_numerically_close(U_tilde, U)
+    #@ OK
+    filename = f'reduced_matrix_reduction_{POD_modes}.dat'
+    reduced_matrix_reduction_ = Path(folder_dir['data'], filename)
+    np.savetxt(reduced_matrix_reduction_, U_tilde.T, delimiter='\t')
