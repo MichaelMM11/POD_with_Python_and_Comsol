@@ -1,0 +1,70 @@
+// Parameters
+int C1=99;
+int C2=98; //could be anything such that !=0 and C1!=C2
+
+// Mesh
+border C0(t=0., 2.*pi){x=5.*cos(t); y=5.*sin(t);}
+
+border C11(t=0., 1.){x=1.+t; y=3.; label=C1;}
+border C12(t=0., 1.){x=2.; y=3.-6.*t; label=C1;}
+border C13(t=0., 1.){x=2.-t; y=-3.; label=C1;}
+border C14(t=0., 1.){x=1.; y=-3.+6.*t; label=C1;}
+
+border C21(t=0., 1.){x=-2.+t; y=3.; label=C2;}
+border C22(t=0., 1.){x=-1.; y=3.-6.*t; label=C2;}
+border C23(t=0., 1.){x=-1.-t; y=-3.; label=C2;}
+border C24(t=0., 1.){x=-2.; y=-3.+6.*t; label=C2;}
+
+
+
+mesh ASAS=buildmesh(C0(50)
+    + C11(5)+C12(20)+C13(5)+C14(20)
+    + C21(-5)+C22(-20)+C23(-5)+C24(-20));
+real[int] colorhsv=[ // color hsv model
+   4./6., 1 , 0.5, // dark blue
+   4./6., 1 , 1, // blue
+   5./6., 1 , 1, // magenta
+   1, 1. , 1, // red
+   1, 0.5 , 1 // light red
+   ];
+
+
+// Fespace
+fespace QWER(ASAS, P2);
+QWER dfg, tt;
+QWER bb=1 + 2*(x<-1)*(x>-2)*(y<3)*(y>-3);
+
+// Solve
+solve a(dfg, tt)
+    = int2d(ASAS)(
+          bb*(
+              dx(dfg)*dx(tt)
+            + dy(dfg)*dy(tt)
+        )
+    )
+    +on(C0, dfg=20)
+    +on(C1, dfg=160)
+    ;
+
+// Plot
+//for (int i = 0; i < dfg.n; i++)
+    cout << dfg[].max << endl;
+    cout << dfg[].min << endl;
+    cout << dfg[] << endl;
+//cout << dfg[0] << endl;
+//cout << Max(dfg) << endl;
+//real[int] viso=[0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.];
+//real[int] viso=[dfg[].min,dfg[].max];
+
+
+int intervali=20;
+real[int] viso(intervali+1);
+
+cout << viso << endl;
+real steppi=(dfg[].max-dfg[].min)/intervali;
+cout << "steppi: " << steppi << endl;
+for (int i = 0; i < (intervali+1); i++){
+   viso[i] = dfg[].min+steppi*(i);
+   cout << viso[i] << endl;
+}
+plot(dfg, wait=true, value=true, viso=viso, fill=true, ps="HeatExchanger.eps", hsv=colorhsv);

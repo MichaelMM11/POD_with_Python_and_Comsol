@@ -40,12 +40,12 @@ set_number_of_digits_after_period(1)
 
 folder_dir = return_folder_dirs()
 
-filename = 'raw_comsol_data____simplest.txt'
+filename = 'L_shape__data.txt'
 data__dir = folder_dir['data']
 data_file = Path(data__dir, filename)
 
 
-snapshot_matrix = Path(data__dir, "raw_data__snapshots.dat")
+snapshot_matrix = Path(data__dir, "L_shape__data__snapshots.dat")
 U = load_snapshot_matrix_from_comsol(snapshot_matrix)
 U =U.T
 #U = np.array([[0,1,3,0], [-2,3,0,4], [0,0,6,1], [0,0,1,6]])
@@ -69,7 +69,7 @@ sorted_eigenvalues, sorted_eigenvectors = sort_eigenvalues_eigenvectors(eigenval
 
 
 separator()
-energy_ratio = 0.9999
+energy_ratio = 1
 show_save_eigenvalue_energy_data(sorted_eigenvalues, energy_ratio)
 diag_lambda = create_reduced_Sigma_matrix(sorted_eigenvalues)
 # console.print(f"[magenta]diag_lambda =\n {diag_lambda}")

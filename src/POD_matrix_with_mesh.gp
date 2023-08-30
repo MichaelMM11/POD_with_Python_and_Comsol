@@ -3,7 +3,7 @@
 
 #@ terminal
 #==========
-#set terminal pdfcairo enhanced color font ",12" size 16cm,10cm  #
+set terminal pdfcairo enhanced color font ",12" size 16cm,10cm  #
 #set terminal postscript eps enhanced color font ",16pt"  #size 6.4,4.8
 
 
@@ -28,7 +28,7 @@ set key outside
 
 
 #unset surface
-set hidden3d
+#set hidden3d
 
 
 #@ colourbar
@@ -51,9 +51,9 @@ set ylabel "length y (cm)"
 #@ plot settings
 #===============
 set encoding utf8
-set output "mesh_POD.ps"
+set output "mesh_1POD.pdf"
 #file="/home/michael/Git/POD_with_Python_and_Comsol/data/merged_reduced_matrix_reduction_5.dat"
-file="/home/michael/Git/POD_with_Python_and_Comsol/data/raw_data.dat"
+file="/home/michael/Git/POD_with_Python_and_Comsol/data/reduced_matrix_reduction_5__mesh__POD.dat"
 
 
 #@ title
@@ -63,14 +63,14 @@ set title "raw_data"
 
 
 # OK  16 in x, 5 in y
-set view map
+#set view map
 set pm3d map
-set autoscale fix
-set ytics 1
+#set autoscale fix
+#set ytics 1
 set dgrid3d 200,200,2
-splot '< tr "," " " < /home/michael/Git/POD_with_Python_and_Comsol/data/raw_data.dat' using 1:2:3
-unset table
-unset dgrid3d
+#splot '< tr "," " " < /home/michael/Git/POD_with_Python_and_Comsol/data/reduced_matrix_reduction_5__mesh__POD.dat' using 1:2:3
+#unset table
+#unset dgrid3d
 #splot file u 1:2:3 with pm3d
 
 #splot file u 1:2:3 with points ps 3 pt 7,
@@ -82,19 +82,21 @@ unset dgrid3d
 # splot file u 1:2:3 w pm3, file u 1:2:(1) with lines nosurface
 
 
+set xrange[*:*]
+set yrange[*:*]
 
 
 #@ plot
 #======
-#splot file using 1:2:3 with pm3 notitle
-#splot file with image 
+splot file using 1:2:24 with pm3 notitle
+#splot using 1file with image 
 #plot file with points
 
 
 
 
 
-pause mouse close
+#pause mouse close
 #unset output
 
 

@@ -26,12 +26,12 @@ set style line 1 linecolor rgb "#FC2D2D" \
 #============
 set xlabel "Mode number"
 set xtics 1
-set xrange[0:10]
+set xrange[0:8]
 
 
 #@ y settings
 #============
-set format y "10^{%L}"
+#set format y "10^{%L}"
 set yrange[*:*]
 set ylabel "Eigenvalue λ_i"
 set logscale y

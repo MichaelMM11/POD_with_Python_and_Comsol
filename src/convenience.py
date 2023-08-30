@@ -178,7 +178,10 @@ def calculate_covariance_matrix(matrix):
     - np.cov() does NOT yield results I get by hand calculation, so I stick to
       the definition
     """
-    rows, _ = get_dimemsions_from_matrix(matrix)
+    rows, cols = get_dimemsions_from_matrix(matrix)
+    if not (rows > cols):
+        message = "WARNING: rows > cols not fulfilled in covariance matrix"
+        console.print(f"[yellow]{message}")
     return np.matmul(matrix.T, matrix)/(rows-1)
 
 
@@ -252,10 +255,10 @@ def show_save_eigenvalue_energy_data(descending_eigenvalues, threshold=1):
 """
     table_settings = {
         "POD":           {"col_position": 0, "notation": '.0f'},
-        "eigenval":      {"col_position": 1, "notation": '0.2e'},
-        "acc_eigenval":  {"col_position": 3, "notation": '0.2e'},
-        "part_E":        {"col_position": 4, "notation": '0.2e'},
-        "sigma":         {"col_position": 2, "notation": '0.2e'},
+        "eigenval":      {"col_position": 1, "notation": '0.6e'},
+        "acc_eigenval":  {"col_position": 3, "notation": '0.3e'},
+        "part_E":        {"col_position": 4, "notation": '0.3e'},
+        "sigma":         {"col_position": 2, "notation": '0.6e'},
         "acc_part_E":    {"col_position": 5, "notation": '0.6f'},
         }
 
