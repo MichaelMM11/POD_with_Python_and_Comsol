@@ -1,0 +1,53 @@
+load "iovtk"
+load "msh3"
+load "gmsh"
+func f = 1.;
+//verbosity = 5;
+
+mesh3 Th = cube(10, 10, 10);
+
+
+
+
+// // // Fespace
+fespace Uh(Th, P1); // Change P1 to P2 to test P2 finite element
+Uh u;
+
+
+// // // // Macro
+macro grad(A) [dx(A), dy(A), dz(A)] //
+
+
+
+varf vPoisson (u, uh)
+	= int3d(Th)(
+		  grad(u)' * grad(uh)
+	)
+	+ int3d(Th)(
+		  f * uh
+	)
+	+ on(2, u=0)
+    + on(3, u=3) // Physical Surface("xaver", 44) = {3};
+	;
+
+//! Problem not working yet
+// problem Poisson (u, v, solver=CG, eps=-1.e-6)
+//    = int3d(Th)(
+//      grad(u)' * grad(v)
+//     //      dx(u)*dx(v)
+//     //    + dy(u)*dy(v)
+//        )
+//      + int3d(Th)(f * v)
+//      + on(Line4, u=0.2)
+// //   + on(4, u=0.33);
+// //   + on(b1, b3, b5, b6, u=0)
+// ;
+
+matrix<real> Poisson = vPoisson(Uh, Uh, solver=sparsesolver);
+real[int] PoissonBoundary = vPoisson(0, Uh);
+u[] = Poisson^-1 * PoissonBoundary;
+plot(u, nbiso=020, fill=true, value=true, ps="threeg.eps");
+
+
+
+

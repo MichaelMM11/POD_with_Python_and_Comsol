@@ -28,4 +28,4 @@ plot(u, wait=1, ps="sound.eps", fill=true, hsv=colorhsv, value=true);
 
 int[int] Order = [1];
 string DataName = "u";
-savevtk("u.vtu", Th, u, dataname=DataName, order=Order );
+//savevtk("u.vtu", Th, u, dataname=DataName, order=Order );

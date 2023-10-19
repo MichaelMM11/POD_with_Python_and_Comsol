@@ -1,0 +1,35 @@
+
+load "iovtk"
+load "msh3"
+load "gmsh"
+// Parameters
+func f = 1.;
+
+// Mesh
+int nn = 5;
+mesh3 Th = cube(nn, nn, nn);
+
+// Fespace
+func Pk = P2;
+fespace Uh(Th, Pk);
+Uh u;
+
+// Macro
+macro grad(A) [dx(A), dy(A), dz(A)] //
+
+// Problem
+varf vPoisson (u, uh)
+	= int3d(Th)(
+		  grad(u)' * grad(uh)
+	)
+	+ int3d(Th)(
+		  f * uh
+	)
+	+ on(1, 2, 3, 4, 5, 6, u=0)
+	;
+matrix<real> Poisson = vPoisson(Uh, Uh, solver=sparsesolver);
+real[int] PoissonBoundary = vPoisson(0, Uh);
+u[] = Poisson^-1 * PoissonBoundary;
+
+// Plot
+plot(u, nbiso=30, fill=true, value=true, cmm="A");

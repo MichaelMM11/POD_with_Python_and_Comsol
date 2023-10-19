@@ -1,0 +1,14 @@
+mesh Th = square(10, 10);
+
+fespace Vh(Th, P1)
+Vh u v
+
+
+problem Poisson (u, v, solver=CG, eps=-1.e-8)
+   = int2d(Th)(
+       grad(u)' * grad(v) )
+       + int2d(Th)(f * v)
+       + on(2, u=0.2)
+       + on(4, u=0.33)
+       //+ on(b1, b3, b5, b6, u=0)
+   ;
