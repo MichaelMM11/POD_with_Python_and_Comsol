@@ -24,9 +24,21 @@ pathlist = sorted(Path(data__dir).rglob('reduced_matrix_of_*'))
 #@ - should be in regex form, it's in your interest to be generic
 
 
+def split_float(x):
+    '''split float into parts before and after the decimal
+    https://stackoverflow.com/questions/3886402/how-to-get-numbers-after-decimal-point'''
+    before, after = 0, 0
+    if '.' in x:
+        before, after = str(x).split('.')
+    return before, after
+    #return int(before), (int(after)*10 if len(after)==1 else int(after))
+
+
 
 
 def get_timestamp_as_list():
+    #! - so far timestamps are stored as string and not floats...
+    #! - does not harm but should be fixed for correctness
     import re
     vtu_data = Path(data__dir, "from_Comsol_odd_timesteps.vtu")
     timestamp_line = []
@@ -49,7 +61,7 @@ def get_timestamp_as_list():
     # for i in a:
     #     print(i.zfill(5))
     return timestamp_line, timestamp_value
-timestamp_line, timestamp_vtk = get_timestamp_as_list()
+timestamp_line, timestamp_vtu = get_timestamp_as_list()
 
 
 end = f'</DataArray>'
@@ -59,8 +71,16 @@ for path in pathlist:
     filename = f'vtu_preparation_for_{counter}modes.dat'
     data_file = Path(data__dir, filename)
     with open (data_file,'w') as f:
-        for idx, i in enumerate(timestamp_vtk):  #@ to guarantee that all timestemps are iterated
-            start = f'<DataArray type="Float64" Name="Temperature_@_t={str(i)}" Format="ascii">'
+        for idx, i in enumerate(timestamp_vtu):  #@ to guarantee that all timestemps are iterated
+            #print(i)
+            a,b = split_float(i)
+            #print(a,b)
+            a = str(a).zfill(2)  #! magic number can be eliminated by take the length before floating point
+            #! period, save this value and insert here
+            #print(a)
+            padded_number = a + '.' + str(b)
+            #print(number)
+            start = f'<DataArray type="Float64" Name="Temperature_@_t={i}" Format="ascii">'
             #! parse data file and adjust time value - with padding if needed
             f.write(start + '\n')
             with open(path, 'r',) as csv_input:
@@ -69,13 +89,13 @@ for path in pathlist:
             f.write(end + '\n')
 
 
-filename = 'from_Comsol_odd_timesteps.vtu'
-data__dir = folder_dir['data']
-data_file = Path(data__dir, filename)
-output_file = Path(data__dir, 'bare_vtk.vtk')
-def comsol_vtk_but_no_timestemps():
+input_filename = 'from_Comsol_odd_timesteps.vtu'
+#data__dir = folder_dir['data']
+input_file = Path(data__dir, input_filename)
+output_file = Path(data__dir, 'bare_vtu.vtu')
+def comsol_vtu_but_no_timestemps():
     is_line_written = 'yes'
-    with open (data_file,'r') as file:
+    with open (input_file,'r') as file:
         with open (output_file, 'w') as f:
             lines = file.readlines()
             for line in lines:
@@ -87,12 +107,12 @@ def comsol_vtk_but_no_timestemps():
                 if line.startswith('</PointData>'):
                     is_line_written = 'yes'
                     f.write('</PointData>\n')
-comsol_vtk_but_no_timestemps()
+comsol_vtu_but_no_timestemps()
 
 
 
 pathlist = sorted(Path(data__dir).rglob('vtu_preparation_for_*'))  #! sorted can be actually removed
-# #@ - should be in regex form, it's in your interest to be generic
+#@ - should be in regex form, it's in your interest to be generic
 counter = 0
 for path in pathlist:
     counter += 1

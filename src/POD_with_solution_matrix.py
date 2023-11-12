@@ -28,6 +28,12 @@ M = np.array([[0,1,3,0], [-2,3,0,4], [0,0,6,1], [0,0,1,6]])
     # [ -8  12   7  23]
     """
 
+# 0) generate_mesh_snapshot_form_file.sh
+# 1) POD_with_solution_matrix.py
+# 2) make_diff_matrix.py
+# 3) make_vtu_data.py
+
+
 from convenience import *
 
 import numpy as np
@@ -37,15 +43,17 @@ from numpy.linalg import inv
 
 should_np_array_be_completely_displayed(True)
 set_number_of_digits_after_period(1)
+number_of_modes = 5
+
 
 folder_dir = return_folder_dirs()
 
-filename = 'L_shape__data.txt'
+#filename = 'from_Comsol_bare_data.txt'
 data__dir = folder_dir['data']
-data_file = Path(data__dir, filename)
+#data_file = Path(data__dir, filename)
 
 
-snapshot_matrix = Path(data__dir, "L_shape__data__snapshots.dat")
+snapshot_matrix = Path(data__dir, "from_Comsol_odd_timesteps__snapshots.dat")
 U = load_snapshot_matrix_from_comsol(snapshot_matrix)
 U =U.T
 #U = np.array([[0,1,3,0], [-2,3,0,4], [0,0,6,1], [0,0,1,6]])
@@ -96,13 +104,24 @@ newU = np.matmul(A, eigenvector.T)
 # matrices_must_be_numerically_close(U, newU)
 
 #@ OK
-for i in range(1,6):
+for i in range(1,number_of_modes+1):
+    #@ - numbers for prototyping, depending on how many eigenmodes should be
+    #@     taken into account
+    #@ - code could also be written that returns threshold modes depending on
+    #@     how much energy of matrix should be covered
     POD_modes = i
-    U_tilde = return_matrix_of_summarized_k_th_reduced_POD(A, eigenvector, POD_modes)
+    U_tilde = return_matrix_of_summarized_k_th_reduced_POD(
+        A,
+        eigenvector,
+        POD_modes)
 
 
     # matrices_must_be_numerically_close(U_tilde, U)
     #@ OK
-    filename = f'reduced_matrix_reduction_{POD_modes}.dat'
+    filename = f'reduced_matrix_of_{POD_modes}modes.dat'
     reduced_matrix_reduction_ = Path(folder_dir['data'], filename)
-    np.savetxt(reduced_matrix_reduction_, U_tilde.T, delimiter='\t')
+    np.savetxt(
+        reduced_matrix_reduction_,
+        U_tilde.T,
+        delimiter='\t')
+
