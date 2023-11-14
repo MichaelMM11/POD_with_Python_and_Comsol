@@ -27,8 +27,9 @@ pathlist = sorted(Path(data__dir).rglob('reduced_matrix_of_*'))
 def split_float(x):
     '''split float into parts before and after the decimal
     https://stackoverflow.com/questions/3886402/how-to-get-numbers-after-decimal-point'''
+    #! make function like: convert number with padding zeros(number, paddings)
     before, after = 0, 0
-    if '.' in x:
+    if '.' in str(x):
         before, after = str(x).split('.')
     return before, after
     #return int(before), (int(after)*10 if len(after)==1 else int(after))
@@ -41,27 +42,47 @@ def get_timestamp_as_list():
     #! - does not harm but should be fixed for correctness
     import re
     vtu_data = Path(data__dir, "from_Comsol_odd_timesteps.vtu")
-    timestamp_line = []
-    timestamp_tuple = []
+    timestamp_lst = []
     with open (vtu_data,'r') as f:
         lines = f.readlines()
         for line in lines:
-            if line.startswith('<DataArray type="Float64" Name="Temperature_@_t'):
-                #? - think if Name="Temperature_@_t is actually needd
+            #if line.startswith('<DataArray type="Float64" Name="Temperature_@_t'):
+            if "_@_t=" in line:
                 #timestamp = re.findall(r'[0-9]+\.[0-9]+', line)
-                timestamp = re.findall(r'\d*\.?\d+', line)  #@ alternative
+                #timestamp = re.findall(r'\d*\.?\d+', line)  #@ alternative
                 #@ - https://stackoverflow.com/questions/4703390/how-to-extract-a-floating-number-from-a-string
-                #@ - needs postprocessing but does the job
-                timestamp_line.append(line)
-                timestamp_tuple.append(timestamp)
+                start = '_@_t='
+                end = '\" '
+                timestamp_as_str = line[line.find(start) + len(start):line.rfind(end)]
+                #@ - https://stackoverflow.com/questions/3368969/find-string-between-two-substrings
+                timestamp_as_float = float(timestamp_as_str)
+                timestamp_lst.append(timestamp_as_float)
     timestamp_value = []
-    for i in timestamp_tuple:
-        timestamp_value.append(i[1])
-    #@ - values can also be written with leading zeros but skipped for the moment
-    # for i in a:
-    #     print(i.zfill(5))
-    return timestamp_line, timestamp_value
-timestamp_line, timestamp_vtu = get_timestamp_as_list()
+    return timestamp_value
+timestamp_vtu = get_timestamp_as_list()
+
+#! convert list to floats
+a = list(map(float, [30.0, 2.8, 0.0, 3.3, 12, 123.456, 12]))  # [[float(i) for i in a]]
+
+#! return max digits left to decimal point (works on positive and negative numbers)
+digits_to_pad = len(str(int(max(list(map(abs, a))))))  #! ugly but it does indeed the job
+print(digits_to_pad)
+#@ - https://stackoverflow.com/questions/2189800/how-to-find-length-of-digits-in-an-integer
+#@ - hilarious discussion about pros and cons suggestions
+
+timestamp_as_paddded = []
+for i in a:
+    a,b = split_float(str(i))
+    a = str(a).zfill(digits_to_pad)
+    if a.startswith('-'):
+        a = a[0] + '0' + a[1:]
+    padded_number = a + '.' + str(b)
+    timestamp_as_paddded.append(padded_number)
+
+print(timestamp_as_paddded)
+
+
+exit()
 
 
 end = f'</DataArray>'
@@ -130,3 +151,7 @@ for path in pathlist:
                                 dum.write(y)
                 else:
                     dum.write(line)
+
+if __name__ == "__main__":
+    print("Hello, World!")
+    #! useful here because of aux script
