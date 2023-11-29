@@ -1,0 +1,36 @@
+
+// - even if I go for the most basic example (a simple rectangle) I can think of
+//     I have 0 access to any boundary element
+
+load "iovtk"
+load "msh3"
+load "gmsh"
+
+// - the following command in shell
+//       gmsh -2 -format msh2 -string 'Mesh.SaveElementTagType=2;' rectangle.geo
+//     does generate me the mesh but still no way to get any boundary <-> label
+//     connection
+// - I got the command from
+//     https://community.freefem.org/t/how-to-apply-the-gmsh-boundary-label-in-freefem/167/12
+//     and even their approach not to get the elements explicitly with
+//     https://community.freefem.org/t/how-to-identify-the-boundary-label-for-an-import-mesh/161
+//     helps (the solution from "prj" on Oct '19) doesn't yield anything except the boundary
+
+mesh Th=gmshload("rectangle.msh");
+
+fespace Vh(Th, P1);
+Vh u, v;
+
+macro grad(u) [dx(u), dy(u)] //
+
+problem Poisson (u, v)
+   = int2d(Th)(
+       grad(u)' * grad(v)
+       )
+       + int2d(Th)(v)
+       + on(1, u=2);  //! will cause (unfortunately) the known error message
+// Warning: -- Your set of boundary condition is incompatible with the mesh label.
+
+Poisson;
+
+plot(u, wait=true, fill=true, value=true);

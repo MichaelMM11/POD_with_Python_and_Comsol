@@ -1,0 +1,4 @@
+macro grad(A) [dx(A), dy(A), dz(A)] //
+
+macro Grad(u)[dx(u), dy(u)] // macro
+

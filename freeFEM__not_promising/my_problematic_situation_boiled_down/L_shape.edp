@@ -1,0 +1,37 @@
+load "iovtk"
+load "msh3"
+load "gmsh"
+
+mesh Th=gmshload("L_shape.msh");
+// - mesh can also be defined within FreeFEM but especially for more complex
+//     geometry this is at least cumbersome, if not impractical
+// - examples can be found here:
+//     https://doc.freefem.org/examples/mesh-generation.html
+//plot(Th, value=true, fill=true);  // just a check if mesh gets loaded correctly
+
+fespace Vh(Th, P1);
+Vh u, v;
+
+macro grad(u) [dx(u), dy(u)] //
+
+problem Poisson (u, v)
+   = int2d(Th)(
+       grad(u)' * grad(v)
+       )
+       + int2d(Th)(v)
+       + on(1, u=1)
+       //+ on(21, u=2)  //! will cause
+                      // Warning: -- Your set of boundary condition is
+                      // incompatible with the mesh label.
+       //? - how can I set different boundary conditions, i.e. how can I
+       //      select different lines with the "on(<LINE>, u=<VALUE>)" syntax
+       //  - as soon as I import the mesh I loose all information of the
+       //      labels and even if I try to select specific line elements that
+       //      are identifies as "Physical Curve" in the .geo file I cannot
+       //      these and therefore I cannot set any values to them; it is like
+       //      they got never created in the first place
+   ;
+
+Poisson;
+
+plot(u, wait=true, fill=true, value=true);

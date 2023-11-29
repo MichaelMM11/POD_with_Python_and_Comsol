@@ -1,0 +1,50 @@
+set palette rgbformulae 30,31,32
+set pm3d map
+set dgrid3d 20,20,3
+splot "graph.txt" with pm3d
+
+
+
+// parameter
+//==========
+bool debug = true;
+real theta=4.*pi/3;
+real[int] colorhsv=[ // color hsv model
+   4./6., 1 , 0.5, // dark blue
+   4./6., 1 , 1, // blue
+   5./6., 1 , 1, // magenta
+   1, 1. , 1, // red
+   1, 0.5 , 1 // light red
+   ];
+
+// border
+//=======
+//plot(..., wait=debug);
+
+// mesh
+//=====
+mesh Th=buildmesh(...);
+//plot(th, wait=debug, hsv=colorhsv)
+
+
+// fespace
+//========
+fespace Vh(Th, P1)
+Vh u v
+
+solve Laplace(u,v)=...
+
+real[int] viso=[0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.];
+plot (u, wait=debug, fill=true)  // ps="output.eps", cmm="comment", viso=viso
+
+
+// Export to gnupot
+//=================
+{
+  ofstream ff("graph.txt");
+  for (int i = 0; i < Th.nt; i++) {
+    for (int j = 0; j < 3; j++)
+      ff << Th[i][j].x  << "    " << Th[i][j].y << "  " << phi[][Vh(i,j)] << endl;
+  ff << Th[i][0].x << "    " << Th[i][0].y << "  " << phi[][Vh(i,0)] << endl << endl << endl;
+  }
+}

@@ -1,0 +1,86 @@
+load "iovtk"
+load "msh3"
+load "gmsh"
+
+mesh3 Th=readmesh3("Mesh.mesh");
+
+int[int] lab = labels(Th);
+cout<<labels(Th)<<endl;
+
+exit(0);
+
+// // Parameters
+int nn = 20;
+
+real L = 10.;
+real H = 10.;
+real l = 3;
+real h = 4;
+
+// func f = 1.;
+
+
+
+// // Mesh
+
+// border b1(t=0, L){x=t; y=0;};
+// border b2(t=0, h){x=L; y=t;};
+// border b3(t=L, l){x=t; y=h;};
+// border b4(t=h, H){x=l; y=t;};
+// border b5(t=l, 0){x=t; y=H;};
+// border b6(t=H, 0){x=0; y=t;};
+
+// mesh Th = buildmesh(b1(nn*L) + b2(nn*h) + b3(nn*(L-l)) + b4(nn*(H-h)) + b5(nn*l) + b6(nn*H));
+// plot(Th, wait=true);
+exit(0);
+// // Fespace
+// fespace Vh(Th, P1); // Change P1 to P2 to test P2 finite element
+// Vh u, v;
+
+
+// // Macro
+// macro grad(u) [dx(u), dy(u)] //
+
+
+// // Problem
+// problem Poisson (u, v, solver=CG, eps=-1.e-8)
+//    = int2d(Th)(
+//        grad(u)' * grad(v) )
+//        + int2d(Th)(f * v)
+//        + on(2, u=0.2)
+//        + on(4, u=0.33)
+//        //+ on(b1, b3, b5, b6, u=0)
+//    ;
+
+//Poisson;
+
+// real[int] colorhsv=[ // color hsv model
+//    4./6., 1 , 0.5, // dark blue
+//    4./6., 1 , 1, // blue
+//    5./6., 1 , 1, // magenta
+//    1, 1. , 1, // red
+//    1, 0.5 , 1 // light red
+//    ];
+
+
+
+// real[int] colorviridis=[ // color hsv model
+//    0.8, 0.98, 0.21,
+//    0.72, 0.64, 0.48,
+//    0.55, 0.69, 0.55,
+//    0.5, 0.77, 0.56,
+//    0.44, 0.77, 0.68,
+//    0.34, 0.54, 0.78,
+//    0.21, 0.77, 0.87,
+//    0.15, 0.86, 0.99
+//    ];
+
+// real[int] bw=[ // color hsv model
+// 1,1,1,
+// 1,0,0
+//    ];
+
+// plot(u, wait=true, fill=true, hsv=bw);
+// // load "iovtk"
+// // load "medit"
+// // savemesh(Th,"from_fee.msh");

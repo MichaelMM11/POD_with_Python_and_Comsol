@@ -1,0 +1,59 @@
+// get some nice postprocessing values and highlights what customary variable names are essentially needed
+load "msh3"
+load "gmsh"
+
+int nn = 10;
+
+real L = 10.;
+real H = 10.;
+real l = 3;
+real h = 4;
+
+border b1(t=0, L){x=t; y=0;};
+border b2(t=0, h){x=L; y=t;};
+border b3(t=L, l){x=t; y=h;};
+border b4(t=h, H){x=l; y=t;};
+border b5(t=l, 0){x=t; y=H;};
+border b6(t=H, 0){x=0; y=t;};
+
+// Mesh
+mesh Th = buildmesh(b1(nn*L) + b2(nn*h) + b3(nn*(L-l)) + b4(nn*(H-h)) + b5(nn*l) + b6(nn*H));
+
+
+// Fespace
+fespace QWER(Th, P1);
+QWER dfg, tt;
+QWER bb=1 + 2*(x<-1)*(x>-2)*(y<3)*(y>-3);
+
+// Solve
+problem TQR(dfg, tt)
+    = int2d(Th)(
+          bb*(
+              dx(dfg)*dx(tt)
+            + dy(dfg)*dy(tt)
+        )
+    )
+     +on(b1, dfg=20)
+     +on(b2, dfg=80)
+     +on(b4, dfg=45)
+    ;
+
+TQR;
+cout << "max_value: " << dfg[].max << endl;
+cout << "min_value: " << dfg[].min << endl;
+cout << "solution values: " << dfg[] << endl;
+
+int numberOfIntervals=5;
+real[int] contourBorder(numberOfIntervals+1);
+
+
+real intervalStepsize=(dfg[].max-dfg[].min)/numberOfIntervals;
+cout << "stepsize between intervals: " << intervalStepsize << endl;
+
+for (int i = 0; i < (numberOfIntervals+1); i++){
+    contourBorder[i] = dfg[].min+intervalStepsize*(i);
+    cout << contourBorder[i] << endl;
+}
+cout << "countourplot borders: " << contourBorder << endl;
+
+plot(dfg, wait=true, value=true, viso=contourBorder, fill=true);

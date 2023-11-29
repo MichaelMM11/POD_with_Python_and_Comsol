@@ -48,5 +48,16 @@
     - A: Agros can, Comsol can be tricky
 - [X] Q: A^T * A =! A * A^T, ie non commutative
     - A: yes, as expected not commutative
-* last discussion <2023-06-02 Fri>
+* last discussion <2023-11-13 Mon>
+geometry close to electric machine ask Honza
+
+can make value prediction (should be exponential because of heat) not polynomial
+
+can I reduce state of reduced system just from boundary temperature measurements
+Kalman Filter but only works in case of dynamical systems
+
+can model work for different excitation
+	biding inside domain
+	something like current
+	Q: work model for different level of current (so works for different parameter values)
 

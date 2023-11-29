@@ -1,0 +1,15 @@
+cl__1 = 1;
+Point(1) = {-1, -1, 0, 1};
+Point(2) = {-1, 1, 0, 1};
+Point(3) = {1, 1, 0, 1};
+Point(4) = {1, -1, 0, 1};
+Line(1) = {1, 4};
+Line(2) = {4, 3};
+Line(3) = {3, 2};
+Line(4) = {2, 1};
+Line Loop(1) = {1, 2, 3, 4};
+Plane Surface(1) = {1};
+Physical Line("L") = {4};
+Physical Line("T") = {3};
+Physical Line("R") = {2};
+Physical Line("B") = {1};

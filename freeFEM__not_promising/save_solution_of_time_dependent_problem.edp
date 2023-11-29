@@ -1,0 +1,105 @@
+//
+// Script
+//
+load "iovtk"
+
+verbosity = 0;
+
+// The geometry
+real hDomain = 0.03; // y dimension of the fluid domain [m]
+real lDomain = 0.06; // x dimension of the fluid domain [m]
+real phiPiezo = 0.0254; // transducer diameter [m]
+
+border B01(t = 0, lDomain){x = t; y = 0; label = 1;};
+border B02(t = 0, hDomain){x = lDomain; y = t; label = 2;};
+border B03(t = lDomain, (lDomain+phiPiezo)/2.){x = t; y = hDomain; label = 3;};
+border B04(t = (lDomain+phiPiezo)/2., (lDomain-phiPiezo)/2.){x = t; y = hDomain; label = 4;}; // le transducteur
+border B05(t = (lDomain-phiPiezo)/2., 0){x = t; y = hDomain; label = 5;};
+border B06(t = hDomain, 0){x = 0; y = t; label = 6;};
+
+// The transducteur's properties
+real Au = 1.; // amplitude
+real freq = 1e6; // frequency
+real Omega = 2.*pi*freq;
+real Sigma = 1.0/freq*0.5;
+real t0 = 4*Sigma; // time before emission
+
+// Speed of sound [m/s]
+real c0 = 1500.0;
+
+// Buid the mesh
+real lambda = c0/freq;
+int pointsPerLambda = 10; // DoF on wavelenght
+
+mesh Th = buildmesh(B01(lDomain/lambda*pointsPerLambda) +
+                    B02(hDomain/lambda*pointsPerLambda) +
+                    B03(((lDomain-phiPiezo)/2.)/lambda*pointsPerLambda) +
+                    B04(phiPiezo/lambda*pointsPerLambda) +
+                    B05(((lDomain-phiPiezo)/2.)/lambda*pointsPerLambda) +
+                    B06(hDomain/lambda*pointsPerLambda));
+
+fespace Vh(Th, P1);
+
+real dt = 1.5e-6; // time step
+real Tfinal = 10e-6; // total propagation time
+
+Vh utp1;      // solution at t+1
+Vh uc = 0.;   // current solution
+Vh utm1 = 0.; // solution at t-1
+Vh v;         // test function
+
+macro Grad(u)[dx(u), dy(u)] // macro
+real c02dt2 = (c0*dt)^2; // optimisation constant
+real tc = 0.; // current time step
+
+Vh f;
+
+problem waveEq(utp1,v) = int2d(Th)(utp1*v)
+                       - int2d(Th)(2.*uc*v)
+                       + int2d(Th)(utm1*v)
+                       + int2d(Th)(Grad(uc)'*Grad(v)*c02dt2)
+                       + on(B01, B02, B03, B05, B06, utp1=0)
+                       + on(B04, utp1=f);
+/*
+varf vM(u, v) = int2d(Th)(u*v)
+              + on(B01, B02, B03, B05, B06, u=0) // conditions aux limites
+              + on(B04, u=f);
+
+varf vA(u, v) = int2d(Th)(2.*u*v - Grad(u)'*Grad(v)*c02dt2);
+
+matrix M = vM(Vh, Vh);
+set(M, solver=sparsesolver);
+matrix AA = vA(Vh, Vh);
+*/
+
+// Time loop
+int[int] fforder = [1];
+int pasTemps = ceil(Tfinal/dt); // total time steps
+
+real cpu = clock(); // CPU time
+
+for(int i = 0; i <= pasTemps; i++){
+  f = Au*sin(Omega*(tc-t0))*exp(-(tc-t0)^2/Sigma^2); // emission wave form
+  waveEq;
+  utm1 = uc;
+  uc = utp1;
+
+  /*
+  real[int] b = AA*uc[];
+	utm1[] = -utm1[];
+	b += M*utm1[];
+	utp1[] = M^-1 * b;
+  utm1[] = uc[];
+  uc[] = utp1[];
+  */
+  cout << i + " " + tc + " " + (Tfinal) << endl;
+
+  // Save solution for Paraview
+   if (!(i % 20)){
+     savevtk("solution_" + i + ".vtu", Th, utp1, order=fforder, dataname="pressure", bin=true);
+   }
+
+  tc += dt;
+}
+
+cout << "Computing time = " << (clock()-cpu) << endl;

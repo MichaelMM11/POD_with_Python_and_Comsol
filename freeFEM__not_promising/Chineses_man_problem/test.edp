@@ -1,0 +1,12 @@
+load "gmsh"
+load "medit"
+load "iovtk"
+
+//mesh Th("test.mesh");					// fail
+mesh Th = gmshload("test.msh"); 		// can't find the border
+//mesh Th = square(10, 10);             // success
+varf onG(u, v) = on(2, u = 2);
+fespace Vh(Th, P1);
+Vh u;
+u[] = onG(0, Vh);
+plot(u);
