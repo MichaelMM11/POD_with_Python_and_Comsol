@@ -92,7 +92,7 @@ def convert_timestamps_to_padded_timestamps(floatings):
         timestamp_as_paddded.append(padded_number)
     return timestamp_as_paddded
 
-def create_aux_padded_timestamp_data_files(quantity="Temperature"):
+def create_aux_padded_timestamp_data_files(quantity):
     """
     - prepare auxiliary files that are needed for postprocessing
     - data values are grouped with 
@@ -181,7 +181,24 @@ data__dir = folder_dir['data']
 pathlist = sorted(Path(data__dir).rglob('reduced_matrix_of_*'))
 timestamp_vtu = get_timestamps_from_file("from_Comsol_odd_timesteps.vtu")
 padded_timestamps = convert_timestamps_to_padded_timestamps(timestamp_vtu)
-create_aux_padded_timestamp_data_files()
+
+
+
+def get_quantity_from_file(filename="from_Comsol_odd_timesteps.vtu"):
+    vtu_file = Path(data__dir, filename)
+    with open(vtu_file, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            if line.startswith('<DataArray'):
+                start_excluding = ' Name='
+                end_excluding = '_@_t='  #'\" '
+                #@ - https://stackoverflow.com/questions/3368969/find-string-between-two-substrings
+                quantity_name = line[line.find(start_excluding) +1  # because " in string
+                                        + len(start_excluding):line.rfind(end_excluding)]
+                break
+    return quantity_name
+quantity = get_quantity_from_file()
+create_aux_padded_timestamp_data_files(quantity)
 remove_timestemps_from_vtu()
 generate_vtu_from_prepared_dat_and_bare_vtu()
 

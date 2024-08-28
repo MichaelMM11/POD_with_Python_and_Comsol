@@ -43,7 +43,7 @@ from numpy.linalg import inv
 
 should_np_array_be_completely_displayed(True)
 set_number_of_digits_after_period(1)
-number_of_modes = 5
+number_of_modes = 10
 
 
 folder_dir = return_folder_dirs()
@@ -55,7 +55,8 @@ data__dir = folder_dir['data']
 
 snapshot_matrix = Path(data__dir, "from_Comsol_odd_timesteps__snapshots.dat")
 U = load_snapshot_matrix_from_comsol(snapshot_matrix)
-U =U.T
+print_dimemsions_from_matrix(U)
+U = U.T
 #U = np.array([[0,1,3,0], [-2,3,0,4], [0,0,6,1], [0,0,1,6]])
 
 # console.print(f"[red]U =\n {U}")
@@ -102,7 +103,7 @@ newU = np.matmul(A, eigenvector.T)
 # console.print(f"[blue]U =\n {U}")
 
 # matrices_must_be_numerically_close(U, newU)
-
+print(f"number of used modes: {number_of_modes}")
 #@ OK
 for i in range(1,number_of_modes+1):
     #@ - numbers for prototyping, depending on how many eigenmodes should be
