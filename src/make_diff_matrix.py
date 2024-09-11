@@ -17,9 +17,9 @@ from pathlib import Path
 
 folder_dir = return_folder_dirs()
 data__dir = folder_dir['data']
+snapshot_file = 'from_Comsol_odd_timesteps__snapshots.dat'
 
-
-snapshot_matrix = Path(data__dir, "from_Comsol_odd_timesteps__snapshots.dat")
+snapshot_matrix = Path(data__dir, snapshot_file)
 U = load_snapshot_matrix_from_comsol(snapshot_matrix)
 
 pathlist = sorted(Path(data__dir).rglob('reduced_matrix_of_*'))

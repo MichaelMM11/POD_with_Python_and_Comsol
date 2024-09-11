@@ -26,9 +26,10 @@ import decimal  # https://stackoverflow.com/questions/25099626/convert-scientifi
 folder_dir = return_folder_dirs()
 data__dir = folder_dir['data']
 filename = 'from_Comsol_odd_timesteps_backup.vtu'
-filename = 'vtu_for_5modes.vtu'
+filename = 'vtu_for_3modes.vtu'
+input_filename = 'from_Comsol_odd_timesteps.vtu'
 
-def get_quantity_from_file(filename="from_Comsol_odd_timesteps.vtu"):
+def get_quantity_from_file(filename=input_filename):
     vtu_file = Path(data__dir, filename)
     with open(vtu_file, 'r') as file:
         lines = file.readlines()
@@ -43,7 +44,7 @@ def get_quantity_from_file(filename="from_Comsol_odd_timesteps.vtu"):
     return quantity_name
 
 
-def get_timestamps_from_file(filename="from_Comsol_odd_timesteps.vtu"):
+def get_timestamps_from_file(filename=input_filename):
     """
     - reads vtu file and returns all timestamps if file is result of transient
         simulation
@@ -86,7 +87,14 @@ def split_float(number):
     return before_dot, after_dot
 
 quantity_name = get_quantity_from_file(filename)
-#print(quantity_name)
+print(quantity_name)
+
+# TODO make more adaptive to name
+modes = (int(''.join(filter(str.isdigit, filename))))
+quantity_name = "_".join([quantity_name, str(modes), 'modes'])
+foldername = "_".join(['anime_', quantity_name])
+quantity_folder = folder_dir['data'].joinpath(foldername)
+quantity_folder.mkdir(exist_ok=True)
 
 timestamps_as_float, timestamps_in_vtu = get_timestamps_from_file(filename)
 #print(timestamps_in_vtu)
@@ -111,7 +119,12 @@ for i,j in zip(timestamps_for_files, timestamps_in_vtu):
         exit()
 
     name = quantity_name + i +'.vtu'
-    filepath = data__dir / name  #! TODO make from_Comsol_vtu essential to name as several vtu exist (just remove .vtu from name)
+    print(f"{name = }")
+    print()
+
+    filepath = quantity_folder / name  #! TODO make from_Comsol_vtu essential to name as several vtu exist (just remove .vtu from name)
+    print(filepath)
+    print()
     filename_in_dir.append(filepath)
     filepath.touch()
     vtu_file = Path(data__dir, filename)
@@ -120,7 +133,7 @@ for i,j in zip(timestamps_for_files, timestamps_in_vtu):
         block_of_interest_active = False
         fake_block_active = False
         outside_block = True
-        print(f"{quantity_name} for t={j} done")
+        #print(f"{quantity_name} for t={j} done")
         for line in firstfile:
             """
             0.0009

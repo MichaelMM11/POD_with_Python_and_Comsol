@@ -18,8 +18,6 @@ from pathlib import Path
 import csv
 
 
-
-
 def split_float(number):
     """
     - splits float into parts before and after decimal point
@@ -176,14 +174,6 @@ def generate_vtu_from_prepared_dat_and_bare_vtu():
                         file_to_write.write(line)
 
 
-folder_dir = return_folder_dirs()
-data__dir = folder_dir['data']
-pathlist = sorted(Path(data__dir).rglob('reduced_matrix_of_*'))
-timestamp_vtu = get_timestamps_from_file("from_Comsol_odd_timesteps.vtu")
-padded_timestamps = convert_timestamps_to_padded_timestamps(timestamp_vtu)
-
-
-
 def get_quantity_from_file(filename="from_Comsol_odd_timesteps.vtu"):
     vtu_file = Path(data__dir, filename)
     with open(vtu_file, 'r') as file:
@@ -197,6 +187,14 @@ def get_quantity_from_file(filename="from_Comsol_odd_timesteps.vtu"):
                                         + len(start_excluding):line.rfind(end_excluding)]
                 break
     return quantity_name
+
+folder_dir = return_folder_dirs()
+data__dir = folder_dir['data']
+pathlist = sorted(Path(data__dir).rglob('reduced_matrix_of_*'))
+timestamp_vtu = get_timestamps_from_file("from_Comsol_odd_timesteps.vtu")
+padded_timestamps = convert_timestamps_to_padded_timestamps(timestamp_vtu)
+
+
 quantity = get_quantity_from_file()
 create_aux_padded_timestamp_data_files(quantity)
 remove_timestemps_from_vtu()
