@@ -26,9 +26,11 @@ def return_folder_dirs():
     main__dir = current__dir.parents[0]
     comsol__dir = main__dir.joinpath('comsol')
     data__dir = main__dir.joinpath('data')
+    data_modes_dir = data__dir.joinpath('modes')
     src__dir = main__dir.joinpath('src')
     dirs = {}
     dirs['data'] = data__dir
+    dirs['data_modes'] = data_modes_dir
     dirs['src'] = src__dir
     return dirs
 

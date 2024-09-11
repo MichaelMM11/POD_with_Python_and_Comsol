@@ -44,15 +44,24 @@ from numpy.linalg import inv
 
 should_np_array_be_completely_displayed(True)
 set_number_of_digits_after_period(1)
-number_of_modes = 3
+number_of_modes = 5
 
+should_modes_folder_be_emptied = True
 
 folder_dir = return_folder_dirs()
 
 #filename = 'from_Comsol_bare_data.txt'
 snapshot_file = 'from_Comsol_odd_timesteps__snapshots.dat'
 data__dir = folder_dir['data']
+data_modes_dir = folder_dir['data_modes']
 #data_file = Path(data__dir, filename)
+reduced_matrix_reduction_folder = folder_dir['data'].joinpath('modes')
+reduced_matrix_reduction_folder.mkdir(exist_ok=True)
+
+if should_modes_folder_be_emptied:
+    files_to_delete = sorted(Path(data_modes_dir).rglob('*'))
+    for path in files_to_delete:
+        path.unlink()
 
 
 snapshot_matrix = Path(data__dir, snapshot_file)
@@ -122,7 +131,9 @@ for i in range(1,number_of_modes+1):
     # matrices_must_be_numerically_close(U_tilde, U)
     #@ OK
     filename = f'reduced_matrix_of_{POD_modes}modes.dat'
-    reduced_matrix_reduction_ = Path(folder_dir['data'], filename)
+
+    reduced_matrix_reduction_ = reduced_matrix_reduction_folder / filename
+
     np.savetxt(
         reduced_matrix_reduction_,
         U_tilde.T,

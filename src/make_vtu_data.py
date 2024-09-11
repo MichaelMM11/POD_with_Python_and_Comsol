@@ -110,7 +110,7 @@ def create_aux_padded_timestamp_data_files(quantity):
     counter = 0
     for path in pathlist:
         counter += 1
-        filename = f'vtu_preparation_for_{counter}modes.dat'
+        filename = f'aux_vtu_preparation_for_{counter}modes.dat'
         data_file = Path(data__dir, filename)
         with open (data_file, 'w') as file:
             for idx, i in enumerate(padded_timestamps):  #@ to guarantee that all timestemps are iterated
@@ -120,6 +120,14 @@ def create_aux_padded_timestamp_data_files(quantity):
                     for row in csv.reader(csv_input, delimiter='\t'):
                         file.write(row[idx] + '\n')
                 file.write(end_marker + '\n')
+
+
+def remove_aux_padded_timestamp_data_files():
+    pathlist = sorted(Path(data__dir).rglob('aux_vtu_preparation_for_*'))
+    #@ - should be in regex form, it's in your interest to be generic
+    for path in pathlist:
+        path.unlink()
+
 
 def remove_timestemps_from_vtu(filename="from_Comsol_odd_timesteps.vtu"):
     """
@@ -153,14 +161,14 @@ def generate_vtu_from_prepared_dat_and_bare_vtu():
     TODO: Think how hardcoded values can be cleaned
     """
     bare_vtu_file = Path(data__dir, 'bare_vtu.vtu')
-    pathlist = sorted(Path(data__dir).rglob('vtu_preparation_for_*'))
+    pathlist = sorted(Path(data__dir).rglob('aux_vtu_preparation_for_*'))
     #@ - should be in regex form, it's in your interest to be generic
     counter = 0
     for path in pathlist:
         counter += 1
         path_in_str = str(path)
         with open (bare_vtu_file, 'r') as file_to_read:
-            vtu_mode_file = Path(data__dir, f'vtu_for_{counter}modes.vtu')
+            vtu_mode_file = Path(data_modes_dir, f'vtu_for_{counter}modes.vtu')
             with open(vtu_mode_file, 'w',) as file_to_write:
                 lines = file_to_read.readlines()
                 for line in lines:
@@ -190,7 +198,8 @@ def get_quantity_from_file(filename="from_Comsol_odd_timesteps.vtu"):
 
 folder_dir = return_folder_dirs()
 data__dir = folder_dir['data']
-pathlist = sorted(Path(data__dir).rglob('reduced_matrix_of_*'))
+data_modes_dir = folder_dir['data_modes']
+pathlist = sorted(Path(data_modes_dir).rglob('reduced_matrix_of_*'))
 timestamp_vtu = get_timestamps_from_file("from_Comsol_odd_timesteps.vtu")
 padded_timestamps = convert_timestamps_to_padded_timestamps(timestamp_vtu)
 
@@ -199,7 +208,7 @@ quantity = get_quantity_from_file()
 create_aux_padded_timestamp_data_files(quantity)
 remove_timestemps_from_vtu()
 generate_vtu_from_prepared_dat_and_bare_vtu()
-
+remove_aux_padded_timestamp_data_files()
 
 # if __name__ == "__main__":
 #     folder_dir = return_folder_dirs()
