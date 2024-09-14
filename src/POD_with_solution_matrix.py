@@ -42,6 +42,51 @@ from pathlib import Path
 
 from numpy.linalg import inv
 
+import time
+a = time.time()
+
+"""
+x = datetime.now()
+print(x)
+print(a)
+T = Timeometer()
+T.add_timestamp('a', a)
+time.sleep(10)
+b = time.time()
+T.add_timestamp('b', b)
+T.show_records()
+T.show_difference_in_entries('a', 'b')
+y = datetime.now()
+print(y)
+print(b-a)
+print(y-x)
+"""
+T = Timeometer()
+print()
+
+# time.sleep(2)
+# T.add_timestamp('y')
+time.sleep(4)
+T.add_timestamp('Agd')
+time.sleep(1.5)
+T.add_timestamp('the Lion King')
+# # T.show_difference_in_entries('x', 'y')
+
+
+time.sleep(1.5)
+T.add_timestamp('end')
+
+T.show_differences()
+
+T.add_timestamp('Agd')
+#time.sleep(3)
+#T.add_timestamp('end')
+T.show_records()
+
+#T.get_delta('start', 'start',)
+#T.show_as_table()
+exit()
+
 should_np_array_be_completely_displayed(True)
 set_number_of_digits_after_period(1)
 number_of_modes = 5
@@ -138,4 +183,5 @@ for i in range(1,number_of_modes+1):
         reduced_matrix_reduction_,
         U_tilde.T,
         delimiter='\t')
+
 

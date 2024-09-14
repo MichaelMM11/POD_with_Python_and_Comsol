@@ -649,3 +649,91 @@ def return_matrix_of_summarized_k_th_reduced_POD(A, eigenvector, k):
         U_k = k_th_U_matrix(A, eigenvector, k)
         U_tilde += U_k
     return U_tilde
+
+import time
+from datetime import timedelta
+class Timeometer:
+    """
+    - assistant that keep tracks of time
+    - written with datetime because feels more natural
+    - https://stackoverflow.com/questions/766335/python-speed-testing-time-difference-milliseconds
+
+    the entries 'start' and 'end' are hardcodes as they should
+    """
+
+    def __init__(self):
+        #from collections import OrderedDict
+        #import time as t
+        self.di = [('start', time.time())]
+
+    def add_timestamp(self, name):
+        #import time
+        for i in self.di:
+            if name == i[0]:
+                console.print(f'[red]ERROR, {name = } alread exist as marker[/red]')
+        self.di.append((name, t.time()))
+
+    def show_records(self):
+        print(self.di)
+
+    def show_differences(self):
+        """
+        - Rodrigo Rodrigues: https://stackoverflow.com/questions/5389507/iterating-over-every-two-elements-in-a-list
+        """
+        for i,_ in enumerate(self.di[:-1]):
+            a = self.di[i]
+            b = self.di[i+1]
+            Timeometer.show_difference_in_entries(self,a, b)
+        for i in self.di:
+            if 'end' not in i:
+                self.di.append(('end', time.time()))
+        Timeometer.get_delta(self, 'start', 'end')
+
+    def show_difference_in_entries(self, a, b, c=14):
+        ent_a = a[0]
+        ent_b = b[0]
+        time_a = a[1]
+        time_b = b[1]
+        if time_b - time_a < 0:
+            console.print(f"[red]Hey, switch {a} and {b}[/red]")
+
+        difference = abs(time_b - time_a)
+        mm, ss = Timeometer._convert_int_to_mm_ss(self, difference)
+        console.print(f"Time between  [yellow]{ent_a:{c}}[/yellow]  ->  [magenta]{ent_b:{c}}[/magenta]  (mm:ss): {mm}:{ss}")
+
+    def _convert_int_to_mm_ss(self, time):
+
+        t = int(time)
+        _, mm, ss = str(timedelta(seconds=t)).split(':')
+        return mm, ss
+
+    def get_delta(self, a, b):
+        """
+        get_delta('start, 'end')
+        get_delta('after calc', 'before disp')
+        """
+        for i in self.di:
+            if a in i:
+                ele_a = i
+            if b in i:
+                ele_b = i
+        Timeometer.show_difference_in_entries(self,ele_a, ele_b,)
+
+    def show_as_table(self):
+        def get_longest_entry():
+            maxi = 0
+            for i in self.di:
+                lgth = len(i[0])
+                if lgth > maxi:
+                    maxi = lgth
+            return maxi
+        maxi = get_longest_entry()
+        # for i in self.di:
+        #     #print(i)
+        #     print(f"{i[0]:{maxi}} ->")
+
+        for i,_ in enumerate(self.di[:-1]):
+            a = self.di[i]
+            b = self.di[i+1]
+            print(f"{i[0]:{maxi}} ->")
+            Timeometer.show_difference_in_entries(self,a, b, maxi)
