@@ -42,81 +42,8 @@ from pathlib import Path
 
 from numpy.linalg import inv
 
-import time
-a = time.time()
-
-"""
-x = datetime.now()
-print(x)
-print(a)
 T = Timeometer()
-T.add_timestamp('a', a)
-time.sleep(10)
-b = time.time()
-T.add_timestamp('b', b)
-T.show_records()
-T.show_difference_in_entries('a', 'b')
-y = datetime.now()
-print(y)
-print(b-a)
-print(y-x)
-"""
-T = Timeometer()
-print()
 
-# time.sleep(2)
-# T.add_timestamp('y')
-time.sleep(1)
-T.add_timestamp('Aged')
-#time.sleep(1.5)
-#T.add_timestamp('the Lion King')
-
-
-
-time.sleep(1.5)
-T.add_timestamp('end')
-T.show_records()
-T.add_timestamp('fasdf')
-time.sleep(2)
-T.add_timestamp('end')
-
-print()
-T.show_differences()
-
-print('after 4')
-time.sleep(4)
-T.add_timestamp('end')
-T.show_records()
-
-print('after another 4')
-time.sleep(4)
-
-T.add_timestamp('end')
-T.show_records()
-
-print('after 9')
-time.sleep(9)
-
-T.show_differences()
-exit()
-# print()
-# T.show_records()
-# T.show_differences()
-# exit()
-# print()
-# T.show_differences()
-
-# exit()
-# T.show_differences()
-
-# T.add_timestamp('Agd')
-# #time.sleep(3)
-# #T.add_timestamp('end')
-# T.show_records()
-
-# #T.get_delta('start', 'start',)
-# #T.show_as_table()
-# exit()
 
 should_np_array_be_completely_displayed(True)
 set_number_of_digits_after_period(1)
@@ -139,24 +66,27 @@ if should_modes_folder_be_emptied:
     for path in files_to_delete:
         path.unlink()
 
-
+T.add_timestamp('initialization done')
 snapshot_matrix = Path(data__dir, snapshot_file)
 U = load_snapshot_matrix_from_comsol(snapshot_matrix)
 print_dimemsions_from_matrix(U)
 U = U.T
 #U = np.array([[0,1,3,0], [-2,3,0,4], [0,0,6,1], [0,0,1,6]])
 
+T.add_timestamp('before calculating covariance matrix')
 # console.print(f"[red]U =\n {U}")
 C = calculate_covariance_matrix(U)
 # console.print(f"[yellow]C =\n {C}")
 #TKE = calculate_stored_energy(C)
 
 separator('calculating eivenvector|values now')
+T.add_timestamp('calculating eivenvector|values now')
 eigenvalue, eigenvector = np.linalg.eig(C)
 # console.print(f"[cyan]eigenvalue =\n {eigenvalue}")
 # console.print(f"[blue]eigenvector =\n {eigenvector}")
 
 separator('sorting eivenvector|values now')
+T.add_timestamp('sorting eigenvector|values')
 sorted_eigenvalues, sorted_eigenvectors = sort_eigenvalues_eigenvectors(eigenvalue, eigenvector)
 # console.print(f"[cyan]sorted_eigenvalues =\n {sorted_eigenvalues}")
 # console.print(f"[blue]sorted_eigenvectors =\n {sorted_eigenvectors}")
@@ -174,7 +104,7 @@ diag_lambda = create_reduced_Sigma_matrix(sorted_eigenvalues)
 newC = np.matmul(sorted_eigenvectors,np.matmul(diag_lambda,sorted_eigenvectors.T))
 # console.print(f"[green]newC =\n {newC}")
 # console.print(f"[blue]C =\n {C}")
-
+T.add_timestamp('before eigenvector')
 #@ OK
 Phi_m = inv(eigenvector)
 Phi_t = eigenvector.T
@@ -215,4 +145,4 @@ for i in range(1,number_of_modes+1):
         U_tilde.T,
         delimiter='\t')
 
-
+T.show_differences()

@@ -659,7 +659,7 @@ class Timeometer:
     - https://stackoverflow.com/questions/766335/python-speed-testing-time-difference-milliseconds
 
     - the marker 'start' is always given and 'end' can be set manually but
-        but will be overwritten automatically in some methods
+        but will be overwritten automatically in some methods and will
         => this strives for user's comfort
     """
 
@@ -686,35 +686,29 @@ class Timeometer:
     def show_differences(self):
         """
         - Rodrigo Rodrigues: https://stackoverflow.com/questions/5389507/iterating-over-every-two-elements-in-a-list
-        """
+            lst = [1,2,3,4,5,6]
+            [(lst[i], lst[i+1]) for i,_ in enumerate(lst[:-1])]
+            >>> [(1, 2), (2, 3), (3, 4), (4, 5), (5, 6)]
+                """
+        Timeometer.add_timestamp(self, 'end')
         for i, _ in enumerate(self.di[:-1]):
             a = self.di[i][0]
             b = self.di[i+1][0]
             Timeometer.show_difference_in_entries(self, a, b)
-
-        # for i in self.di:
-        #     if 'end' != i[0]:
-        #         #print(f"{i= }")
-        #         #print(f"{i[0] = }")
-        #         Timeometer.add_timestamp(self, 'end')
-        #         #self.di.append(('end', time.time()))
-        #print(f"a ", self.di)
         Timeometer.add_timestamp(self, 'end')
-        #print(f"b ", self.di)
         Timeometer.get_delta(self, 'start', 'end')
-        print(f"c =", self.di)
 
-    def show_difference_in_entries(self, a, b, c=14):
+    def show_difference_in_entries(self, a, b):
         ele_a, time_a = Timeometer._get_marker_and_time_from_entry(self, a)
         ele_b, time_b = Timeometer._get_marker_and_time_from_entry(self, b)
-        #print(f"{ent_a = } and {time_a = } and {ent_b = } and {time_b = }")
         if time_b - time_a < 0:
             console.print(f"[red]Hey, switch {a} and {b}[/red]")
 
         difference = abs(time_b - time_a)
         mm, ss = Timeometer._convert_int_to_mm_ss(self, difference)
+        c = Timeometer._get_longest_entry(self)
         if a == 'start' and b == 'end':
-            console.print(64*'=')
+            console.print((36+2*c)*'=')
         console.print(f"Time between  [yellow]{ele_a:{c}}[/yellow]  ->  [magenta]{ele_b:{c}}[/magenta]  (mm:ss): {mm}:{ss}")
 
     def _get_marker_and_time_from_entry(self, a):
@@ -738,21 +732,10 @@ class Timeometer:
         ele_b, _ = Timeometer._get_marker_and_time_from_entry(self, b)
         Timeometer.show_difference_in_entries(self,ele_a, ele_b)
 
-    # def show_as_table(self):
-    #     def get_longest_entry():
-    #         maxi = 0
-    #         for i in self.di:
-    #             lgth = len(i[0])
-    #             if lgth > maxi:
-    #                 maxi = lgth
-    #         return maxi
-    #     maxi = get_longest_entry()
-    #     # for i in self.di:
-    #     #     #print(i)
-    #     #     print(f"{i[0]:{maxi}} ->")
-
-    #     for i,_ in enumerate(self.di[:-1]):
-    #         a = self.di[i]
-    #         b = self.di[i+1]
-    #         print(f"{i[0]:{maxi}} ->")
-    #         Timeometer.show_difference_in_entries(self,a, b, maxi)
+    def _get_longest_entry(self):
+        maxi = 0
+        for i in self.di:
+            lgth = len(i[0])
+            if lgth > maxi:
+                maxi = lgth
+        return maxi
