@@ -658,20 +658,27 @@ class Timeometer:
     - written with datetime because feels more natural
     - https://stackoverflow.com/questions/766335/python-speed-testing-time-difference-milliseconds
 
-    the entries 'start' and 'end' are hardcodes as they should
+    - the marker 'start' is always given and 'end' can be set manually but
+        but will be overwritten automatically in some methods
+        => this strives for user's comfort
     """
 
     def __init__(self):
-        #from collections import OrderedDict
-        #import time as t
         self.di = [('start', time.time())]
 
     def add_timestamp(self, name):
-        #import time
-        for i in self.di:
-            if name == i[0]:
-                console.print(f'[red]ERROR, {name = } alread exist as marker[/red]')
-        self.di.append((name, t.time()))
+        """
+        - adds the timestamp if possible
+            - 'end' marker will be deleted if given (for convenience)
+            - any duplicated marker will abort the method
+        """
+        for i, x in enumerate(self.di):
+            if 'end' == x[0]:
+                self.di.pop(i)
+            elif name == x[0]:
+                console.print(f'[red]ERROR: {name = } alread exist as marker[/red]')
+                exit()
+        self.di.append((name, time.time()))
 
     def show_records(self):
         print(self.di)
@@ -680,31 +687,46 @@ class Timeometer:
         """
         - Rodrigo Rodrigues: https://stackoverflow.com/questions/5389507/iterating-over-every-two-elements-in-a-list
         """
-        for i,_ in enumerate(self.di[:-1]):
-            a = self.di[i]
-            b = self.di[i+1]
-            Timeometer.show_difference_in_entries(self,a, b)
-        for i in self.di:
-            if 'end' not in i:
-                self.di.append(('end', time.time()))
+        for i, _ in enumerate(self.di[:-1]):
+            a = self.di[i][0]
+            b = self.di[i+1][0]
+            Timeometer.show_difference_in_entries(self, a, b)
+
+        # for i in self.di:
+        #     if 'end' != i[0]:
+        #         #print(f"{i= }")
+        #         #print(f"{i[0] = }")
+        #         Timeometer.add_timestamp(self, 'end')
+        #         #self.di.append(('end', time.time()))
+        #print(f"a ", self.di)
+        Timeometer.add_timestamp(self, 'end')
+        #print(f"b ", self.di)
         Timeometer.get_delta(self, 'start', 'end')
+        print(f"c =", self.di)
 
     def show_difference_in_entries(self, a, b, c=14):
-        ent_a = a[0]
-        ent_b = b[0]
-        time_a = a[1]
-        time_b = b[1]
+        ele_a, time_a = Timeometer._get_marker_and_time_from_entry(self, a)
+        ele_b, time_b = Timeometer._get_marker_and_time_from_entry(self, b)
+        #print(f"{ent_a = } and {time_a = } and {ent_b = } and {time_b = }")
         if time_b - time_a < 0:
             console.print(f"[red]Hey, switch {a} and {b}[/red]")
 
         difference = abs(time_b - time_a)
         mm, ss = Timeometer._convert_int_to_mm_ss(self, difference)
-        console.print(f"Time between  [yellow]{ent_a:{c}}[/yellow]  ->  [magenta]{ent_b:{c}}[/magenta]  (mm:ss): {mm}:{ss}")
+        if a == 'start' and b == 'end':
+            console.print(64*'=')
+        console.print(f"Time between  [yellow]{ele_a:{c}}[/yellow]  ->  [magenta]{ele_b:{c}}[/magenta]  (mm:ss): {mm}:{ss}")
+
+    def _get_marker_and_time_from_entry(self, a):
+        for i in self.di:
+            if a in i:
+                ele_a = i[0]
+                time_a = i[1]
+        return ele_a, time_a
 
     def _convert_int_to_mm_ss(self, time):
-
-        t = int(time)
-        _, mm, ss = str(timedelta(seconds=t)).split(':')
+        sec = int(time)
+        _, mm, ss = str(timedelta(seconds=sec)).split(':')
         return mm, ss
 
     def get_delta(self, a, b):
@@ -712,28 +734,25 @@ class Timeometer:
         get_delta('start, 'end')
         get_delta('after calc', 'before disp')
         """
-        for i in self.di:
-            if a in i:
-                ele_a = i
-            if b in i:
-                ele_b = i
-        Timeometer.show_difference_in_entries(self,ele_a, ele_b,)
+        ele_a, _ = Timeometer._get_marker_and_time_from_entry(self, a)
+        ele_b, _ = Timeometer._get_marker_and_time_from_entry(self, b)
+        Timeometer.show_difference_in_entries(self,ele_a, ele_b)
 
-    def show_as_table(self):
-        def get_longest_entry():
-            maxi = 0
-            for i in self.di:
-                lgth = len(i[0])
-                if lgth > maxi:
-                    maxi = lgth
-            return maxi
-        maxi = get_longest_entry()
-        # for i in self.di:
-        #     #print(i)
-        #     print(f"{i[0]:{maxi}} ->")
+    # def show_as_table(self):
+    #     def get_longest_entry():
+    #         maxi = 0
+    #         for i in self.di:
+    #             lgth = len(i[0])
+    #             if lgth > maxi:
+    #                 maxi = lgth
+    #         return maxi
+    #     maxi = get_longest_entry()
+    #     # for i in self.di:
+    #     #     #print(i)
+    #     #     print(f"{i[0]:{maxi}} ->")
 
-        for i,_ in enumerate(self.di[:-1]):
-            a = self.di[i]
-            b = self.di[i+1]
-            print(f"{i[0]:{maxi}} ->")
-            Timeometer.show_difference_in_entries(self,a, b, maxi)
+    #     for i,_ in enumerate(self.di[:-1]):
+    #         a = self.di[i]
+    #         b = self.di[i+1]
+    #         print(f"{i[0]:{maxi}} ->")
+    #         Timeometer.show_difference_in_entries(self,a, b, maxi)
