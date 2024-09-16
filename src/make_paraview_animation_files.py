@@ -25,11 +25,18 @@ import decimal  # https://stackoverflow.com/questions/25099626/convert-scientifi
 
 folder_dir = return_folder_dirs()
 data__dir = folder_dir['data']
+data_modes_dir = folder_dir['data_modes']
 filename = 'from_Comsol_odd_timesteps_backup.vtu'
-filename = 'vtu_for_5modes.vtu'
+filename = 'vtu_for_2modes.vtu'
+default_filename = 'from_Comsol_odd_timesteps.vtu'
 
-def get_quantity_from_file(filename="from_Comsol_odd_timesteps.vtu"):
-    vtu_file = Path(data__dir, filename)
+
+def get_quantity_from_file(filename=default_filename):
+    vtu_file = Path(data_modes_dir, filename)
+    if not vtu_file.is_file():
+        message = 'ERROR: file does not exist!'
+        console.print(f"[red]{message}")
+        exit()
     with open(vtu_file, 'r') as file:
         lines = file.readlines()
         for line in lines:
@@ -43,7 +50,7 @@ def get_quantity_from_file(filename="from_Comsol_odd_timesteps.vtu"):
     return quantity_name
 
 
-def get_timestamps_from_file(filename="from_Comsol_odd_timesteps.vtu"):
+def get_timestamps_from_file(filename=default_filename):
     """
     - reads vtu file and returns all timestamps if file is result of transient
         simulation
@@ -53,7 +60,7 @@ def get_timestamps_from_file(filename="from_Comsol_odd_timesteps.vtu"):
     #    timestamp = re.findall(r'\d*\.?\d+', line)
     # feel too cumbersome
     #@ - https://stackoverflow.com/questions/4703390/how-to-extract-a-floating-number-from-a-string
-    vtu_file = Path(data__dir, filename)
+    vtu_file = Path(data_modes_dir, filename)
     timestamp_values = []
     timestamp_in_vtu = []
     with open (vtu_file,'r') as file:
@@ -86,7 +93,14 @@ def split_float(number):
     return before_dot, after_dot
 
 quantity_name = get_quantity_from_file(filename)
-#print(quantity_name)
+print(quantity_name)
+
+# TODO make more adaptive to name
+modes = (int(''.join(filter(str.isdigit, filename))))
+quantity_name = "_".join([quantity_name, str(modes), 'modes'])
+foldername = "_".join(['anime_', get_quantity_from_file(filename)])
+quantity_folder = folder_dir['data'].joinpath(foldername)
+quantity_folder.mkdir(exist_ok=True)
 
 timestamps_as_float, timestamps_in_vtu = get_timestamps_from_file(filename)
 #print(timestamps_in_vtu)
@@ -111,16 +125,21 @@ for i,j in zip(timestamps_for_files, timestamps_in_vtu):
         exit()
 
     name = quantity_name + i +'.vtu'
-    filepath = data__dir / name  #! TODO make from_Comsol_vtu essential to name as several vtu exist (just remove .vtu from name)
+    print(f"{name = }")
+    print()
+
+    filepath = quantity_folder / name  #! TODO make from_Comsol_vtu essential to name as several vtu exist (just remove .vtu from name)
+    #print(filepath)
+    #print()
     filename_in_dir.append(filepath)
     filepath.touch()
-    vtu_file = Path(data__dir, filename)
+    vtu_file = Path(data_modes_dir, filename)
 
     with open(vtu_file,'r') as firstfile, open(filepath,'w') as secondfile:
         block_of_interest_active = False
         fake_block_active = False
         outside_block = True
-        print(f"{quantity_name} for t={j} done")
+        #print(f"{quantity_name} for t={j} done")
         for line in firstfile:
             """
             0.0009

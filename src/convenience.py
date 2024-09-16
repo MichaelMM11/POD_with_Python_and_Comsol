@@ -20,15 +20,19 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from tabulate import tabulate
+import time
+from datetime import timedelta
 
 def return_folder_dirs():
     current__dir = Path.cwd()
     main__dir = current__dir.parents[0]
     comsol__dir = main__dir.joinpath('comsol')
     data__dir = main__dir.joinpath('data')
+    data_modes_dir = data__dir.joinpath('modes')
     src__dir = main__dir.joinpath('src')
     dirs = {}
     dirs['data'] = data__dir
+    dirs['data_modes'] = data_modes_dir
     dirs['src'] = src__dir
     return dirs
 
@@ -647,3 +651,129 @@ def return_matrix_of_summarized_k_th_reduced_POD(A, eigenvector, k):
         U_k = k_th_U_matrix(A, eigenvector, k)
         U_tilde += U_k
     return U_tilde
+
+
+class Timeometer:
+    """
+    - assistant that keep tracks of time
+    - written with datetime because feels more natural
+    - https://stackoverflow.com/questions/766335/python-speed-testing-time-difference-milliseconds
+
+    - the marker 'start' is always given and 'end' can be set manually but
+        but will be overwritten automatically in some methods and will
+        => this strives for user's comfort
+    - Timeometer consists of stamps, each stamp is made up by a pair:
+        ('event a', 1726441607) == (marker, time)
+
+    - basic calls
+        T = Timeometer()
+        T.add_timestamp('a')
+        T.make_timestamps_overview()
+        T.add_timestamp('b')
+        show_delta_of_timestamps('a', 'b')
+    """
+
+    def __init__(self):
+        self.timestamps = [('start', time.time())]
+
+    def add_timestamp(self, marker):
+        """
+        - adds the timestamp if possible
+            - 'end' marker will be deleted if given (for convenience)
+            - any duplicated marker will abort the method call and
+                lead to runtime error
+        """
+        for idx, val in enumerate(self.timestamps):
+            if 'end' == val[0]:
+                self.timestamps.pop(idx)
+            elif marker == val[0]:
+                console.print(f'[red]ERROR: {marker = } alread exist as marker[/red]')
+                exit()
+        self.timestamps.append((marker, time.time()))
+
+    def show_timestamps(self):
+        """
+        - bare 
+                print(self.timestamps)
+            doesn't look nice when stamps get more and more...
+        - quick&dirty coded, I know...
+
+        alternative
+        ===========
+        for pair in self.timestamps:
+            marker = pair[0]
+            time = pair[1]
+            print(f"{marker = }")
+            print(f"{time = }")
+            print()
+        """
+        maxi = Timeometer._get_length_of_longest_marker(self)
+        m_txt = 'marker'
+        t_txt = 'time'
+        m_length = maxi if len(m_txt) < maxi else len(m_txt)
+        t_length = 18  # any time.time() has length 18 for sure
+        sep_length = 5+m_length+t_length  # 5 because of spaces around separtor
+        print(f'| {m_txt:{m_length}} | {t_txt:{t_length}} |')
+        print('|' + sep_length*'=' + '|')
+        for pair in self.timestamps:
+            marker = pair[0]
+            time = str(pair[1])
+            print(f"| {marker:{m_length}} | {time:{t_length}} |")
+
+    def make_timestamps_overview(self):
+        """
+        - Rodrigo Rodrigues: https://stackoverflow.com/questions/5389507/iterating-over-every-two-elements-in-a-list
+            lst = [1,2,3,4,5,6]
+            [(lst[i], lst[i+1]) for i,_ in enumerate(lst[:-1])]
+            >>> [(1, 2), (2, 3), (3, 4), (4, 5), (5, 6)]
+                """
+        Timeometer.add_timestamp(self, 'end')
+        for idx, _ in enumerate(self.timestamps[:-1]):
+            marker_a = self.timestamps[idx][0]
+            marker_b = self.timestamps[idx+1][0]
+            Timeometer.show_delta_of_timestamps(self, marker_a, marker_b)
+        Timeometer.add_timestamp(self, 'end')
+        Timeometer.show_delta_of_timestamps(self, 'start', 'end')  #get_delta
+
+    def show_delta_of_timestamps(self, marker_a, marker_b):
+        name_a, time_a = Timeometer._get_marker_and_time_from_stamps(self, marker_a)
+        name_b, time_b = Timeometer._get_marker_and_time_from_stamps(self, marker_b)
+        if time_b - time_a < 0:
+            console.print(f"[red]Hey, switch {marker_a} and {marker_b} in next call[/red]")
+
+        difference = abs(time_b - time_a)
+        mm, ss = Timeometer._convert_int_to_mm_ss(self, difference)
+        space_placeholder = Timeometer._get_length_of_longest_marker(self)
+        if marker_a == 'start' and marker_b == 'end':
+            console.print((36+2*space_placeholder)*'=')
+        console.print(f"Time between  [yellow]{name_a:{space_placeholder}}[/yellow]  ->  [magenta]{name_b:{space_placeholder}}[/magenta]  (mm:ss): {mm}:{ss}")
+
+    # def get_delta(self, marker_a, marker_b):
+    #     """
+    #     possible calls
+    #     - get_delta('start, 'end')
+    #     - get_delta('after calc', 'before disp')
+    #     """
+    #     name_a, _ = Timeometer._get_marker_and_time_from_stamps(self, marker_a)
+    #     name_b, _ = Timeometer._get_marker_and_time_from_stamps(self, marker_b)
+    #     Timeometer.show_delta_of_timestamps(self, name_a, name_b)
+
+    def _get_marker_and_time_from_stamps(self, marker):
+        for pair in self.timestamps:
+            if marker in pair:
+                name_a = pair[0]
+                time_a = pair[1]
+        return name_a, time_a
+
+    def _convert_int_to_mm_ss(self, time):
+        sec = int(time)
+        _, mm, ss = str(timedelta(seconds=sec)).split(':')
+        return mm, ss
+
+    def _get_length_of_longest_marker(self):
+        max_length = 0
+        for i in self.timestamps:
+            cur_length = len(i[0])
+            if cur_length > max_length:
+                max_length = cur_length
+        return max_length
