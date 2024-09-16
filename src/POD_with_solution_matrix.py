@@ -45,6 +45,7 @@ from numpy.linalg import inv
 T = Timeometer()
 
 
+
 should_np_array_be_completely_displayed(True)
 set_number_of_digits_after_period(1)
 number_of_modes = 5
