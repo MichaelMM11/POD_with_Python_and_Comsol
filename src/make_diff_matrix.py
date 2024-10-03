@@ -18,7 +18,7 @@ from pathlib import Path
 folder_dir = return_folder_dirs()
 data__dir = folder_dir['data']
 data_modes_dir = folder_dir['data_modes']
-snapshot_file = 'from_Comsol_odd_timesteps__snapshots.dat'
+snapshot_file = 'Comsol__qty_snapshots.dat'
 
 snapshot_matrix = Path(data__dir, snapshot_file)
 U = load_snapshot_matrix_from_comsol(snapshot_matrix)

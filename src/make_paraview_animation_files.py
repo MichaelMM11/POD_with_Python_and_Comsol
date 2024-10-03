@@ -28,7 +28,7 @@ data__dir = folder_dir['data']
 data_modes_dir = folder_dir['data_modes']
 filename = 'from_Comsol_odd_timesteps_backup.vtu'
 filename = 'vtu_for_2modes.vtu'
-default_filename = 'from_Comsol_odd_timesteps.vtu'
+default_filename = 'geo.vtu'
 
 
 def get_quantity_from_file(filename=default_filename):
@@ -126,7 +126,6 @@ for i,j in zip(timestamps_for_files, timestamps_in_vtu):
 
     name = quantity_name + i +'.vtu'
     print(f"{name = }")
-    print()
 
     filepath = quantity_folder / name  #! TODO make from_Comsol_vtu essential to name as several vtu exist (just remove .vtu from name)
     #print(filepath)

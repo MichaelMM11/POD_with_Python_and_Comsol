@@ -32,7 +32,7 @@ def split_float(number):
         before_dot, after_dot = str(number).split('.')
     return before_dot, after_dot
 
-def get_timestamps_from_file(filename="from_Comsol_odd_timesteps.vtu"):
+def get_timestamps_from_file(filename="geo.vtu"):
     """
     - reads vtu file and returns all timestamps if file is result of transient
         simulation
@@ -129,7 +129,7 @@ def remove_aux_padded_timestamp_data_files():
         path.unlink()
 
 
-def remove_timestemps_from_vtu(filename="from_Comsol_odd_timesteps.vtu"):
+def remove_timestemps_from_vtu(filename="geo.vtu"):
     """
     - returns the bare vtu content from input file EXCEPT the '<DataArray> and
         </DataArray>' groups with data values
@@ -182,7 +182,7 @@ def generate_vtu_from_prepared_dat_and_bare_vtu():
                         file_to_write.write(line)
 
 
-def get_quantity_from_file(filename="from_Comsol_odd_timesteps.vtu"):
+def get_quantity_from_file(filename="geo.vtu"):
     vtu_file = Path(data__dir, filename)
     with open(vtu_file, 'r') as file:
         lines = file.readlines()
@@ -200,7 +200,7 @@ folder_dir = return_folder_dirs()
 data__dir = folder_dir['data']
 data_modes_dir = folder_dir['data_modes']
 pathlist = sorted(Path(data_modes_dir).rglob('reduced_matrix_of_*'))
-timestamp_vtu = get_timestamps_from_file("from_Comsol_odd_timesteps.vtu")
+timestamp_vtu = get_timestamps_from_file("geo.vtu")
 padded_timestamps = convert_timestamps_to_padded_timestamps(timestamp_vtu)
 
 

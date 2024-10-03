@@ -55,7 +55,7 @@ should_modes_folder_be_emptied = True
 folder_dir = return_folder_dirs()
 
 #filename = 'from_Comsol_bare_data.txt'
-snapshot_file = 'from_Comsol_odd_timesteps__snapshots.dat'
+snapshot_file = 'Comsol__qty_snapshots.dat'
 data__dir = folder_dir['data']
 data_modes_dir = folder_dir['data_modes']
 #data_file = Path(data__dir, filename)
@@ -123,7 +123,7 @@ newU = np.matmul(A, eigenvector.T)
 # matrices_must_be_numerically_close(U, newU)
 print(f"number of used modes: {number_of_modes}")
 #@ OK
-for i in range(1,number_of_modes+1):
+for i in range(1, number_of_modes+1):
     #@ - numbers for prototyping, depending on how many eigenmodes should be
     #@     taken into account
     #@ - code could also be written that returns threshold modes depending on
@@ -146,4 +146,4 @@ for i in range(1,number_of_modes+1):
         U_tilde.T,
         delimiter='\t')
 
-T.show_differences()
+T.make_timestamps_overview()

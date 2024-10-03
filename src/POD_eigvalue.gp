@@ -37,13 +37,17 @@ set ylabel "Eigenvalue λ_i"
 set logscale y
 
 
+#@ title
+set title "absolut value of eigenvalues"
+
+
 #@ plot settings
 #===============
 set encoding utf8
 set key autotitle columnheader
 set key left bottom
 set key noenhanced
-set output "POD__eigenvalue.pdf"
+set output "/home/michael/Git/POD_with_Python_and_Comsol/data/POD__eigenvalue.pdf"
 
 
 #@ plot

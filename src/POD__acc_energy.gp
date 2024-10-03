@@ -32,7 +32,12 @@ set xrange[0:8]
 #@ y settings
 #============
 set ylabel 'acc. Energy'
-set yrange[*:*]
+set ytics 0.01
+set yrange[0.95 :1.01]
+
+
+#@ title setting
+set title "cumulative eigenvalues"
 
 
 #@ plot settings
@@ -41,7 +46,7 @@ set encoding utf8
 set key autotitle columnheader
 set key right bottom
 set key noenhanced
-set output "POD__acc_energy.pdf"
+set output "/home/michael/Git/POD_with_Python_and_Comsol/data/POD__acc_energy.pdf"
 
 
 #@ plot
