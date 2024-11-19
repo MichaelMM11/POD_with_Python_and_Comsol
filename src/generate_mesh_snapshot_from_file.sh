@@ -83,8 +83,29 @@ select_geometrical_dimension_of_data(){
     done
 }
 
+return_dimension(){
+    dim=`grep -i 'Dimension' $comsol_data_file | awk '{print $3}'`
+    expr="$(grep -i 'Expressions' $comsol_data_file | awk '{print $3}')"
+    row=$(grep -i 'Nodes' "$comsol_data_file" | awk '{print $3}')
+    col="$((dim+expr))"
+
+    if [[ $dim == "" ]]; then
+        echo -e "\e[0;31mERROR: $comsol_data_file is already processed"
+        echo -e "no value detraction possible!\e[0m"
+        col=""
+    fi
+
+    echo ""
+    echo -e "number of dimension:....$dim"
+    echo -e "number of expressions:..$expr"
+    echo -e "number of rows:.........$row"
+    echo -e "number of columns:......$col"
+    echo ""
+}
+
 apply_blind_algorithm(){
     replace_spaces_with_tab
+    return_dimension
     delete_lines_starting_with_comment
 }
 
