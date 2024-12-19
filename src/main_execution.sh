@@ -14,11 +14,11 @@
 #      - if you want to continue not from step 1 but ...let's say step 4 then   #
 #          be aware that some side effects are possible                         #
 #                                                                               #
-#      - get the files
-#          geo.vtu
-#          Comsol__qty_snapshots.dat
-#        from Comsol->Export->Data->Output->File type (txt and vtu)
-#
+#      - get the files                                                          #
+#          geo.vtu                                                              #
+#          Comsol__qty_snapshots.dat                                            #
+#        from Comsol->Export->Data->Output->File type (txt and vtu)             #
+#                                                                               #
 #################################################################################
 
 bash_folder='/home/michael/Git/POD_with_Python_and_Comsol/src/Bash'
@@ -77,7 +77,8 @@ body(){
     #read -rp "want to execute $1 (y|n): " gms
 
     # variant 3
-    read -p $'run \e[3;93m'"$1"$'\e[0m: (y|n|any) ' choice  #@ https://stackoverflow.com/questions/24998434/read-command-display-the-prompt-in-color-or-enable-interpretation-of-backslas
+    read -p $'run \e[3;93m'"$1"$'\e[0m: (y|n|any) ' choice
+    #@ https://stackoverflow.com/questions/24998434/read-command-display-the-prompt-in-color-or-enable-interpretation-of-backslas
 
     choice=${choice}
     if [[ "$choice" == "y" || "$choice" == "" ]]; then
