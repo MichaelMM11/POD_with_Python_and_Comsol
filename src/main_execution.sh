@@ -52,6 +52,12 @@ execute_make_paraview_animation_files(){
     python make_paraview_animation_files.py
 }
 
+execute_make_gnuplots(){
+    cd "$gnuplot_folder"
+    gnuplot POD__acc_energy.gp
+    gnuplot POD__eigenvalue.gp
+}
+
 return_main_folder(){
     cd "$bash_folder"
 }
@@ -61,56 +67,45 @@ display_successful_run(){
 }
 
 body(){
-    #echo -e "$1"
-    #! works
+    #! different ways for colourful messages (= easier to read)
+    # note that $1 refers to the 1st argument and is universal in bash
+    # variant 1
     #echo -e "want \e[2;93m$1\e[0m: (y|n|a)"
     #read -rp "" gms
-    
-    read -p $'run \e[3;32m'"$1"$'\e[0m: (y|n|any) ' gms  # https://stackoverflow.com/questions/24998434/read-command-display-the-prompt-in-color-or-enable-interpretation-of-backslas
+
+    # variant 2
     #read -rp "want to execute $1 (y|n): " gms
 
-    gms=${gms}
-    echo -e "value is $gms"
-#! add colour here
-    if [[ "$gms" == "y" || "$gms" == "" ]]; then
-        #echo -e "\e[2;96m$1\e[0m"
-        #echo -e "program is executed"
+    # variant 3
+    read -p $'run \e[3;93m'"$1"$'\e[0m: (y|n|any) ' choice  #@ https://stackoverflow.com/questions/24998434/read-command-display-the-prompt-in-color-or-enable-interpretation-of-backslas
+
+    choice=${choice}
+    if [[ "$choice" == "y" || "$choice" == "" ]]; then
+        echo -e "step \e[0;92m$1\e[0m is running..."
         $1
-    elif [[ "$gms" == "n" ]]; then
-        echo -e "program is not executed"  # is skipped
+    elif [[ "$choice" == "n" ]]; then
+        echo -e "step \e[2;97m$1\e[0m is skipped"
     else
-        echo -e "program terminates as a whole"
+        echo -e "\e[0;91mprogram terminated as a whole!\e[0m"
         exit
     fi
 }
 
 
-
 main(){
     body execute_generate_mesh_snapshot_from_file
-    #body execute_POD_with_solution_matrix
-    #body execute_make_diff_matrix
-    #body execute_make_vtu_data
-    #body execute_make_paraview_animation_files
-#     read -rp "want to execute generate_mesh_snapshot_from_file (y|n): " gms
-#     gms=${gms}
-# #! add colour here
-#     if [[ "$gms" == "y" || "$gms" == "" ]]; then
-#         echo -e "program is executed"
-#         execute_generate_mesh_snapshot_from_file
-#     elif [[ "$gms" == "n" ]]; then
-#         echo -e "program is not executed"
-#     else
-#         echo -e "program terminates"
-#         exit
-#     fi
-
+    body execute_POD_with_solution_matrix
+    body execute_make_diff_matrix
+    body execute_make_vtu_data
+    body execute_make_paraview_animation_files
+    body execute_make_gnuplots
 
     #execute_generate_mesh_snapshot_from_file
     #execute_POD_with_solution_matrix
     #execute_make_diff_matrix
     #execute_make_vtu_data
     #execute_make_paraview_animation_files
+    #execute_make_gnuplots
     #return_main_folder
     display_successful_run
 }

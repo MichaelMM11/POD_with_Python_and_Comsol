@@ -26,6 +26,7 @@ from datetime import timedelta
 def return_folder_dirs():
     current__dir = Path.cwd()
     main__dir = current__dir.parents[0]
+    main__dir = Path('/home/michael/Git/POD_with_Python_and_Comsol')
     comsol__dir = main__dir.joinpath('comsol')
     data__dir = main__dir.joinpath('data')
     data_modes_dir = data__dir.joinpath('modes')
