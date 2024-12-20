@@ -1,10 +1,23 @@
 py_virt_env/
+
 .idea
 
 src/scipy
 src/__pycache__/
-src/loggings.log
+src/Python/__pycache__/
+src/Python/loggings.log
 src/violation*
+src/loggings.log
+
+data/[1-9]/*
+data/Comsol__qty_snapshots.dat
+data/Comsol__qty_snapshots__mesh.dat
+data/Comsol__qty_snapshots__snapshots.dat
+data/bare_vtu.vtu
+data/eigenvalue_energy_table.dat
+data/geo.vtu
+
+
 git_commit_message.txt
 
 status_quo.org
