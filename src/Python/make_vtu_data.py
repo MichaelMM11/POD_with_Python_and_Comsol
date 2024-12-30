@@ -44,6 +44,7 @@ def get_timestamps_from_file(filename="geo.vtu"):
     #@ - https://stackoverflow.com/questions/4703390/how-to-extract-a-floating-number-from-a-string
     vtu_file = Path(data__dir, filename)
     timestamp_values = []
+    check_if_file_exists(vtu_file)
     with open (vtu_file,'r') as file:
         lines = file.readlines()
         for line in lines:

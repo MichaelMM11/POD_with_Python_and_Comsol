@@ -33,10 +33,7 @@ default_filename = 'geo.vtu'
 
 def get_quantity_from_file(filename=default_filename):
     vtu_file = Path(data_modes_dir, filename)
-    if not vtu_file.is_file():
-        message = 'ERROR: file does not exist!'
-        console.print(f"[red]{message}")
-        exit()
+    check_if_file_exists(vtu_file)
     with open(vtu_file, 'r') as file:
         lines = file.readlines()
         for line in lines:

@@ -778,3 +778,9 @@ class Timeometer:
             if cur_length > max_length:
                 max_length = cur_length
         return max_length
+
+def check_if_file_exists(file):
+    if not file.is_file():
+        message = f'ERROR: file {file = } does not exist!'
+        console.print(f"[red]{message}")
+        exit()

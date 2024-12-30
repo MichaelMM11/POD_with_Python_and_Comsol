@@ -78,7 +78,7 @@ body(){
     #read -rp "want to execute $1 (y|n): " gms
 
     # variant 3
-    read -p $'run \e[3;93m'"$1"$'\e[0m: (y|n|any) ' choice
+    read -p $'run \e[3;93m'"$1"$'\e[0m: (y|n|any key for abort) ' choice
     #@ https://stackoverflow.com/questions/24998434/read-command-display-the-prompt-in-color-or-enable-interpretation-of-backslas
 
     choice=${choice}
@@ -91,6 +91,7 @@ body(){
         echo -e "\e[0;91mprogram terminated as a whole!\e[0m"
         exit
     fi
+    echo ""
 }
 
 
